@@ -1,0 +1,14 @@
+{
+    "debug": false,
+    "logfile": "/home/easemonitor/log/agentd.log",
+    "hostname": "",
+    "ip": "",
+    "transfer": {
+        "enabled": true,
+        "addr": "127.0.0.1:4444",
+        "interval": 60,
+        "timeout": 30
+    },
+    "ignore": {
+    }
+}

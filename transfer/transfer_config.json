@@ -1,0 +1,39 @@
+{
+    "debug": false,
+    "logfile": "/home/easemonitor/log/transfer.log",
+    "data_store": true,
+    "data_judge": false,
+    "concurrency_num": 1,
+    "retry_times": 2,
+    "wait_time": 5,
+    "sleep_time": 1,
+    "http": {
+        "enabled": true,
+        "host": "0.0.0.0",
+        "port": 4445
+    },
+    "rpc": {
+        "enabled": true,
+        "listen": "0.0.0.0:4444"
+    },
+    "queue":{
+      "enabled": true,
+      "type": "redis",
+      "max_queue_len": 100000,
+      "queue_suffix": "monitor_queue",
+      "store": {
+        "host": "localhost",
+        "port": 6379,
+        "db": 0
+      },
+      "judge": {
+        "host": "localhost",
+        "port": 6379,
+        "db": 1
+      }
+    },
+    "cache_queue":{
+      "enabled": true,
+      "max_queue_len": 100000
+    }
+}
