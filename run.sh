@@ -1,13 +1,11 @@
 #!/bin/bash
+# this script will run in the container
 
 if [ ! $# -eq 1 ]; then
     exit 2
 fi
 
 case $1 in
-    "agent")
-        python3 agentd_run.py -c agent/agent_config.json
-        ;;
     "transfer")
         python3 transfer_run.py -c transfer/transfer_config.json
         ;;
