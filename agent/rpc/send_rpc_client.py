@@ -6,10 +6,8 @@ import logging
 class RpcClient:
     def __init__(self, server_host, timeout=30, heart_beat_itv=10):
         self.rpc_server = "tcp://" + server_host
-        self.rpc_client = zerorpc.Client()
+        self.rpc_client = zerorpc.Client(timeout=timeout, heartbeat=heart_beat_itv)
         self.rpc_client.connect(self.rpc_server)
-        self.timeout = timeout
-        self.heart_beat_itv = heart_beat_itv
 
         # record stat
         self.stats_count = None
