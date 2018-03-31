@@ -5,9 +5,10 @@
     "ip": "",
     "transfer": {
         "enabled": true,
-        "addr": "127.0.0.1:4444",
+        "addr": "10.83.3.46:4444",
         "interval": 60,
-        "timeout": 30
+        "timeout": 30,
+        "headbeat": 5
     },
     "ignore": {
     }

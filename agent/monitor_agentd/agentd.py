@@ -53,7 +53,6 @@ class MonitorAgent:
             self.basic_info['system.hostname'] = self.config.var_dict['hostname']
         if self.config.var_dict['ip']:
             self.basic_info['system.host_ip'] = self.config.var_dict['ip']
-        print(self.basic_info)
 
     def _rpc_srv_conf_init(self):
         """init rpc server basic config"""
@@ -65,8 +64,8 @@ class MonitorAgent:
             self._rpc_server_host = transfer_addr
             self.collect_interval = self.config.var_dict.get('collect_interval')
             logging.info('collect interval: %s s' % self.collect_interval)
-            self._rpc_server_timeout = self.config.var_dict.get('transfer_timeout') or \
-                                       self.default_collect_interval
+            self._rpc_server_timeout = self.config.var_dict.get('transfer_timeout')
+            self._rpc_server_hb = self.config.var_dict.get('transfer_headbeat')
 
     def _collector_ignore_init(self):
         """ set collector ignore list"""
@@ -77,7 +76,9 @@ class MonitorAgent:
             logging.info('Set no ignore metric list')
 
     def _rpc_client_init(self):
-        self._rpc_client = RpcClient(self._rpc_server_host)
+        self._rpc_client = RpcClient(self._rpc_server_host,
+                                     timeout=self._rpc_server_timeout,
+                                     heart_beat_itv=self._rpc_server_hb)
 
     def data_collect_loop(self):
         # prevent zombie processes
@@ -90,19 +91,16 @@ class MonitorAgent:
 
         gevent.joinall(thread_lst)
 
-    def data_process_loop(self, func):
+    def data_process_loop(self, collect_func):
         while True:
             t_start = time.time()
             now_timestamp = int(datetime.now().timestamp())
-            data = func()
+            data = collect_func()
             processed_data = self.data_model_format(data, now_timestamp)
             if processed_data:
                 self._data_push(processed_data)
-
             logging.debug('data process once cost: %s', str(time.time() - t_start))
             gevent.sleep(self.collect_interval)
-
-            # to do: logger should be do catch exception in greenlet
 
     def _data_push(self, processed_data):
         logging.debug('data will send')
@@ -115,10 +113,7 @@ class MonitorAgent:
     def data_model_format(self, data, timestamps):
         if isinstance(data, dict):
             return self._data_model_build_no_tag(data, timestamps)
-        elif isinstance(data, list):
-            return self._data_model_build_with_tag(data, timestamps)
         else:
-            # un format collected data
             return
 
     def _data_model_build_no_tag(self, data, timestamps):
@@ -136,24 +131,4 @@ class MonitorAgent:
                 }
             }
             data_lst.append(item_dict)
-        return data_lst
-
-    def _data_model_build_with_tag(self, data, timestamps):
-        data_lst = []
-        for data_with_tag in data:
-            tag = data_with_tag.pop('tag')
-            tag.update({
-                "host_ip": self.basic_info['system.host_ip'],
-                "hostname": self.basic_info['system.hostname']
-            })
-            for item_name, item_value in data_with_tag.items():
-                item_dict = {
-                    "metric": item_name,
-                    "timestamp": timestamps,
-                    "step": self.collect_interval,
-                    "value": item_value,
-                    "counterType": 'GAUGE',
-                    "tags": tag
-                }
-                data_lst.append(item_dict)
         return data_lst

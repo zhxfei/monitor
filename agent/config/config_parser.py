@@ -29,6 +29,7 @@ class AgentConfigParser:
             elif con_n == 'transfer' and con_v.get('enabled'):
                 self.var_dict['transfer_addr'] = con_v.get('addr')
                 self.var_dict['transfer_timeout'] = con_v.get('timeout')
+                self.var_dict['transfer_headbeat'] = con_v.get('headbeat')
                 self.var_dict['collect_interval'] = con_v.get('interval')
             else:
                 self.var_dict[con_n] = con_v
