@@ -143,7 +143,7 @@ class Router:
             gevent.sleep(self.sender_sleep_times)
 
     def transfer_loop(self):
-        gevent.signal(signal.SIGQUIT, gevent.kill)
+        gevent.signal(signal.SIGTERM, gevent.kill)
 
         job_lst = list()
 
@@ -155,7 +155,7 @@ class Router:
                 job_lst.append(gevent.spawn(self.send_to_queue, q_name, cache_q))
 
         logging.info("transfer loop started")
-        # todo: greenlet timeout process
+
         gevent.joinall(job_lst)
 
 

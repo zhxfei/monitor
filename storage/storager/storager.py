@@ -104,12 +104,11 @@ class DataStorage:
             gevent.sleep(self._thread_sleep_time)
 
     def storage_forever(self):
-        gevent.signal(signal.SIGQUIT, gevent.kill)
+        gevent.signal(signal.SIGTERM, gevent.kill)
 
         job_lst = list()
         for job_id in range(0, self._concurrency_num):
             job_lst.append(gevent.spawn(self._pull_and_storage, job_id))
 
-        # todo: greenlet timeout process
         logging.info('storager will serve forever')
         gevent.joinall(job_lst)
