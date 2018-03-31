@@ -104,7 +104,7 @@ class DataStorage:
             gevent.sleep(self._thread_sleep_time)
 
     def storage_forever(self):
-        gevent.signal(signal.SIGTERM, gevent.kill)
+        gevent.signal(signal.SIGQUIT, gevent.kill)
 
         job_lst = list()
         for job_id in range(0, self._concurrency_num):

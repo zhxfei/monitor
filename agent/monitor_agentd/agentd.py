@@ -82,7 +82,7 @@ class MonitorAgent:
 
     def data_collect_loop(self):
         # prevent zombie processes
-        gevent.signal(signal.SIGTERM, gevent.kill)
+        gevent.signal(signal.SIGQUIT, gevent.kill)
 
         thread_lst = []
 

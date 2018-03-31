@@ -143,7 +143,7 @@ class Router:
             gevent.sleep(self.sender_sleep_times)
 
     def transfer_loop(self):
-        gevent.signal(signal.SIGTERM, gevent.kill)
+        gevent.signal(signal.SIGQUIT, gevent.kill)
 
         job_lst = list()
 
