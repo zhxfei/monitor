@@ -11,7 +11,7 @@ REQUIRMENT_PACKS="zerorpc gevent psutil"
 
 usage()
 {
-    echo "Usage: agent_run.sh start|stop|restart|check|install"
+    echo "Usage: agent_run.sh start|stop|restart|check|install|status"
 }
 
 check_pidfile()
@@ -88,6 +88,16 @@ agent_restart()
     agent_start
 }
 
+agent_status()
+{
+    if [ -e ${PID_FILE} ];then
+        echo "[INFO] agent is running..."
+    else
+        echo "[INFO] agent is not running..."
+    fi
+
+}
+
 agent_check()
 {
     if [ ! -d ${WORKSPACE}/env ];then
@@ -160,6 +170,9 @@ case $1 in
         ;;
     "install")
         agent_install
+        ;;
+    "status")
+        agent_status
         ;;
     *)
         echo "[ERROR] unkown parameter"
