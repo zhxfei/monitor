@@ -7,25 +7,35 @@ standard_format = [
     'metric',
     'counterType',
     'timestamp',
-    'endpoint',
     'step'
 ]
 
 
 def check_data_is_format(data):
+    """
+    check data is format
+    :param data:
+    :return: format_status, data
+    """
     try:
         data_lst = data
         if not isinstance(data, list):
             data_lst = json.loads(data)
+
         for d in data_lst:
-            if isinstance(d, dict):
-                for key in d.keys():
-                    if key not in standard_format:
-                        return False, None
-            else:
-                return False, None
+            assert isinstance(d, dict), ValueError("data contains not dict")
+
+            for key in d.keys():
+                assert key in standard_format, ValueError(
+                    "data contains key not in %s" % "/".join(standard_format))
+
         return True, data_lst
+
+    except ValueError as e:
+        logging.error("data format check error %s" % e)
+        return False, None
     except Exception as e:
+        logging.error("data format check unknown error %s" % e)
         return False, None
 
 

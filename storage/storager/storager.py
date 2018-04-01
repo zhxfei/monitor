@@ -26,6 +26,9 @@ class DataStorage:
         self.basic_init()
         self.config = StorageConfigParser(config_path)
         self._log_init()
+        self._service_init()
+
+    def _service_init(self):
         try:
             self._node_init()
             self._db_conn_init()
@@ -45,6 +48,7 @@ class DataStorage:
 
     def _node_init(self):
         self._node_name = self.config.var_dict['node_name']
+        self._node_type = self._node_name.split('-')[0]
         self._concurrency_num = self.config.var_dict.get('concurrency_num') or 10
         self._thread_sleep_time = self.config.var_dict.get('thread_sleep') or 2
 
@@ -75,13 +79,16 @@ class DataStorage:
             redis_host = self.config.var_dict['queue']['addr']['host']
             redis_port = self.config.var_dict['queue']['addr']['port']
             redis_db = self.config.var_dict['queue']['addr']['db']
-            queue_name = self.config.var_dict['queue']['queue_suffix'] + ":" + "store"
+            queue_suffix = self.config.var_dict['queue']['queue_suffix']
+            backend_type = self._node_type
+
             self._batch = self.config.var_dict['queue']['batch']
             self.puller = DataPuller(host=redis_host,
                                      port=redis_port,
                                      db=redis_db,
                                      password=redis_pass,
-                                     queue_name=queue_name,
+                                     queue_name=queue_suffix,
+                                     backend_type=backend_type,
                                      batch=self._batch)
         logging.info('redis connection init succeed')
 

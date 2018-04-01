@@ -2,7 +2,8 @@ import json
 import logging
 
 import zerorpc
-from .data_process import data_process
+
+from transfer.receiver.data_process import data_process
 from transfer.utils.data_formater import check_data_is_format
 
 
@@ -38,7 +39,7 @@ class UploadDataModule:
             return json.dumps(res)
 
 
-class MonitorRpcServer:
+class RpcServer:
     def __init__(self, listen, cache_queue_map):
         self.rpc_listen = "tcp://" + listen
         self.cache_queue_map = cache_queue_map
@@ -47,7 +48,8 @@ class MonitorRpcServer:
         try:
             s = zerorpc.Server(UploadDataModule(cache_queue_map=self.cache_queue_map))
             s.bind(self.rpc_listen)
-            logging.info('RPC-server will running ')
+            logging.info('RPC-server will running %s' % self.rpc_listen)
             s.run()
         except Exception as e:
             logging.error('RPC-server run error')
+            logging.error(e)

@@ -1,26 +1,8 @@
-import json
-import sys
+from common.config.config_parser import ConfigParser
 
 
-class AgentConfigParser:
-    def __init__(self, config_path):
-        self._file_path = config_path
-        self._var_dict = {}
-        self.var_dict = {}
-        self.config_parse()
-
+class AgentConfigParser(ConfigParser):
     def config_parse(self):
-        try:
-            with open(self._file_path, 'r') as f:
-                content = f.read()
-                self._var_dict.update(json.loads(content))
-
-            self._config_parse()
-        except Exception as e:
-            print(e)
-            sys.exit(3)
-
-    def _config_parse(self):
         for con_n, con_v in self._var_dict.items():
             if con_n == 'ignore':
                 ignore_item_list = [ignore_item for ignore_item, ignore_stat in con_v.items()

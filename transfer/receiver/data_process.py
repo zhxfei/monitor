@@ -17,6 +17,6 @@ def data_process(item_data, cache_queue_map):
     except Full as e:
         logging.error('queue is full, %s' % e)
         return False, 'queue is full'
-
     except Exception as e:
+        logging.error('Unknown error, %s' % e)
         return False, 'Unknown error'

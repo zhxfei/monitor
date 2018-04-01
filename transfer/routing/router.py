@@ -1,18 +1,18 @@
-import signal
-import sys
 import logging
 import os
+import signal
+import sys
 
 import gevent
 import redis
 from gevent.queue import Queue
 
+from common.connections.conn_pool import RedisConnPool
+from common.queue.conn_queue import RedisQueue
+from common.queue.exceptions import QueueFullException
 from transfer.config.config_parser import TransferConfigParser
-from transfer.rpc.recv_rpc_server import MonitorRpcServer
-from transfer.transfer_queue.conn_queue import RedisQueue
-from transfer.conn_pool.conn_pools import RedisConnPool
-from transfer.httpd.recv_http_server import HttpServer
-from transfer.exceptions.queue_exception import QueueFullException
+from transfer.receiver.recv_http_server import HttpServer
+from transfer.receiver.recv_rpc_server import RpcServer
 
 
 class Router:
@@ -24,37 +24,36 @@ class Router:
         self.conn_map = dict()
         self.cache_queue_map = dict()
 
-    def basic_init(self):
-        # for configuration centralized management
-        pass
-
     def config_init(self, config_path):
         """config init"""
-        self.basic_init()
         self.config = TransferConfigParser(config_path)
+        self._log_init()
+        self._service_init()
+
+    def _service_init(self):
+        """ init config by routers function"""
         try:
-            self._log_init()
-            self._backend_nodes_init()
-            self._conn_pool_init()
-            self._queue_init()
-            self._concurrency_init()
+            self._router_init()
             self._receiver_conf_init()
             self._sender_conf_init()
         except KeyError as e:
             logging.error("!!! Service config load error")
             logging.error(e)
-            sys.exit(2)
+            sys.exit(1)
+
+    def _router_init(self):
+        self._backend_nodes_init()
+        self._conn_pool_init()
+        self._queue_init()
+        self._concurrency_init()
 
     def _log_init(self):
         """ log init """
-        logging.basicConfig(filename=self.config.var_dict.get('logfile') or None,
-                            level=logging.DEBUG if self.config.var_dict.get('debug') else logging.INFO,
-                            format='%(levelname)s:%(asctime)s:%(message)s')
-
-    def _concurrency_init(self):
-        """ greenlet numbers init , every backend will get concurrency number greenlets"""
-        self.concurrency_num = self.config.var_dict.get('concurrency_num') or 10
-        logging.info('concurrency config %d' % self.concurrency_num)
+        logging.basicConfig(
+            filename=self.config.var_dict.get('logfile') or None,
+            level=logging.DEBUG if self.config.var_dict.get('debug') else logging.INFO,
+            format='%(levelname)s:%(asctime)s:%(message)s'
+        )
 
     def _backend_nodes_init(self):
         if self.config.var_dict.get('data_store'):
@@ -67,22 +66,26 @@ class Router:
         """ connection pool init """
         try:
             for queue_type in self.backend_lst:
+                # if $REDIS_PASS not exists, means redis access don't require password
                 redis_pass = os.getenv('REDIS_PASS')
                 redis_info = self.config.var_dict['queue'].get(queue_type)
                 if redis_info:
-                    cp = RedisConnPool(host=redis_info['host'],
-                                       port=redis_info['port'],
-                                       db=redis_info['db'],
-                                       password=redis_pass)
+                    conn = RedisConnPool(
+                        host=redis_info['host'],
+                        port=redis_info['port'],
+                        db=redis_info['db'],
+                        password=redis_pass
+                    ).get_conn()
 
-                    if cp.status_check():
-                        self.conn_map[queue_type] = cp.conn
-                    else:
-                        logging.error("redis conn un useful")
-                        sys.exit(5)
+                    self.conn_map[queue_type] = conn
+                else:
+                    logging.error("redis connection init failed")
         except redis.exceptions.ConnectionError as e:
             logging.error(e)
-            sys.exit(1)
+            sys.exit(2)
+        except ValueError as e:
+            logging.error(e)
+            sys.exit(3)
 
     def _queue_init(self):
         """ cache queue and redis queue init """
@@ -92,15 +95,23 @@ class Router:
 
         if self.config.var_dict['queue']['type'] == 'redis':
             for queue_type in self.backend_lst:
-                redis_queue = RedisQueue(backend_type=queue_type,
-                                         max_queue_len=max_queue_len,
-                                         queue_suffix=queue_suffix,
-                                         conn=self.conn_map[queue_type])
+                redis_queue = RedisQueue(
+                    backend_type=queue_type,
+                    max_queue_len=max_queue_len,
+                    queue_suffix=queue_suffix,
+                    connection=self.conn_map[queue_type]
+                )
                 self.queue_map[queue_type] = redis_queue
 
                 cache_queue = Queue(maxsize=cache_queue_len)
                 self.cache_queue_map[queue_type] = cache_queue
-                logging.info("Queues init succeed")
+
+                logging.info("Queue %s init succeed" % queue_type)
+
+    def _concurrency_init(self):
+        """ greenlet numbers init , every backend will get concurrency number greenlets"""
+        self.concurrency_num = self.config.var_dict.get('concurrency_num') or 1
+        logging.info('concurrency config %d' % self.concurrency_num)
 
     def _sender_conf_init(self):
         """ sender init """
@@ -120,29 +131,33 @@ class Router:
     def _rpc_srv_conf_init(self):
         """init rpc server basic config, agent will use it """
         self._rpc_server_listen = self.config.var_dict['rpc']['listen']
-        self._rpc_server = MonitorRpcServer(listen=self._rpc_server_listen,
-                                            cache_queue_map=self.cache_queue_map)
+        self._rpc_server = RpcServer(
+            listen=self._rpc_server_listen,
+            cache_queue_map=self.cache_queue_map
+        )
 
     def _http_conf_init(self):
         """init http server basic config, common API for data upload"""
         self._http_server_host = self.config.var_dict['http']['host']
         self._http_server_port = self.config.var_dict['http']['port']
-        self._http_server = HttpServer(http_host=self._http_server_host,
-                                       http_port=self._http_server_port,
-                                       cache_queue_map=self.cache_queue_map)
+        self._http_server = HttpServer(
+            http_host=self._http_server_host,
+            http_port=self._http_server_port,
+            cache_queue_map=self.cache_queue_map
+        )
 
     def send_to_queue(self, q_name, cache_q):
         redis_q = self.queue_map[q_name]
         while True:
             logging.debug('Queue name: %s, len: %d' % (q_name, len(cache_q)))
-            send_to_backend(redis_q,
-                            cache_q,
-                            self.sender_wait_time,
-                            self.sender_retry_times)
+
+            send_to_backend(redis_q, cache_q, self.sender_wait_time, self.sender_retry_times)
+
             logging.debug('Queue is empty, greenlet will be sleep %d s' % self.sender_sleep_times)
             gevent.sleep(self.sender_sleep_times)
 
     def transfer_loop(self):
+        """ all function modules start"""
         gevent.signal(signal.SIGQUIT, gevent.kill)
 
         job_lst = list()
