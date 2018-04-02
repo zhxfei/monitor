@@ -12,8 +12,7 @@ class DataPuller:
         self._redis_conn = RedisConnPool(host=host, port=port, db=db, password=password)
 
         self.queue = RedisQueue(
-            max_queue_len=10000,
-            queue_suffix='easy_monitor',
+            queue_suffix=queue_name,
             backend_type=backend_type,
             connection=self._redis_conn.get_conn()
         )

@@ -1,3 +1,5 @@
+from ast import literal_eval
+
 from .exceptions import QueueFullException
 
 
@@ -39,8 +41,10 @@ class RedisQueue(BaseQueue):
         :param batch:
         :param timeout:
         :return: tuple
-            tuple(True, data_lst) is mean the redis queue is empty, data_lst is the last data
-            tuple(False, data_lst) is mean the redis queue is not empty, data_lst is  data
+            tuple(True, data_lst) is mean the redis queue is empty
+                        data_lst is the last data
+            tuple(False, data_lst) is mean the redis queue is not empty,
+                        data_lst is  data and type(data) is list with dict
         '''
         count = 0
         data_lst = list()
@@ -49,13 +53,15 @@ class RedisQueue(BaseQueue):
             return True, None
 
         while count < batch:
-            # redis pop data is a byte type, and block rpop result is a tuple (pop_res_status, pop_res_data)
             data = self.queue.brpop(self.queue_name, timeout=timeout)
 
             if isinstance(data, tuple):
-                data_lst.append(data[1].decode('utf-8'))
+                # redis pop data is a byte type
+                # if redis list length > 0 , rpop data is a tuple (pop_queue_name, pop_res_data)
+                data_lst.append(literal_eval(data[1].decode('utf-8')))
                 count += 1
             else:
+                # if redis list length = 0 or not exists, rpop data is None
                 break
 
         return count < batch, data_lst

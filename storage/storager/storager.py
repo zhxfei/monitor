@@ -40,10 +40,11 @@ class DataStorage:
 
     def _log_init(self):
         """ log init """
-        logging.basicConfig(filename=self.config.var_dict.get('logfile') or None,
-                            level=logging.DEBUG if self.config.var_dict.get('debug') else logging.INFO,
-                            format='%(levelname)s:%(asctime)s:%(message)s')
-
+        logging.basicConfig(
+            filename=self.config.var_dict.get('logfile') or None,
+            level=logging.DEBUG if self.config.var_dict.get('debug') else logging.INFO,
+            format='%(levelname)s:%(asctime)s:%(message)s'
+        )
         logging.info('logger init succeed')
 
     def _node_init(self):
@@ -63,14 +64,21 @@ class DataStorage:
         db_user = self.config.var_dict['database']['user']
         db_name = self.config.var_dict['database']['db_name']
         document_name = self.config.var_dict['database']['document_name']
-        self.db_clt = DatabaseClient(db_host=db_host,
-                                     db_port=db_port,
-                                     db_name=db_name,
-                                     db_user=db_user,
-                                     db_pass=db_pass,
-                                     document_name=document_name)
-        _ = self.db_clt.document_count()
-        logging.info('db connection init succeed')
+        try:
+            self.db_clt = DatabaseClient(
+                db_host=db_host,
+                db_port=db_port,
+                db_name=db_name,
+                db_user=db_user,
+                db_pass=db_pass,
+                document_name=document_name
+            )
+            _ = self.db_clt.document_count()
+        except Exception as e:
+            logging.error("Database Connection Init Error %s" % e)
+            sys.exit(6)
+        else:
+            logging.info('Database Connection Init Succeed')
 
     def _puller_init(self):
         if self.config.var_dict['queue']['type'] == 'redis':
@@ -83,14 +91,21 @@ class DataStorage:
             backend_type = self._node_type
 
             self._batch = self.config.var_dict['queue']['batch']
-            self.puller = DataPuller(host=redis_host,
-                                     port=redis_port,
-                                     db=redis_db,
-                                     password=redis_pass,
-                                     queue_name=queue_suffix,
-                                     backend_type=backend_type,
-                                     batch=self._batch)
-        logging.info('redis connection init succeed')
+            try:
+                self.puller = DataPuller(
+                    host=redis_host,
+                    port=redis_port,
+                    db=redis_db,
+                    password=redis_pass,
+                    queue_name=queue_suffix,
+                    backend_type=backend_type,
+                    batch=self._batch
+                )
+            except ValueError as e:
+                logging.error("Data Puller Init Error: %s" % e)
+                sys.exit(5)
+            else:
+                logging.info('Data Puller Init Succeed')
 
     def _pull_and_storage(self, job_id):
         while True:
@@ -100,10 +115,10 @@ class DataStorage:
                 if data:
                     res = self.db_clt.data_insert(data)
                     if res:
-                        logging.debug("insert succeed")
-                        logging.debug("once insert {} data Cost:{}".format(self._batch, time.time() - t1))
+                        logging.debug("Insert Succeed")
+                        logging.debug("Insert {} data Cost:{}".format(self._batch, time.time() - t1))
                     else:
-                        logging.error("insert error")
+                        logging.error("Insert Error")
 
                 if queue_is_empty:
                     break
@@ -117,5 +132,5 @@ class DataStorage:
         for job_id in range(0, self._concurrency_num):
             job_lst.append(gevent.spawn(self._pull_and_storage, job_id))
 
-        logging.info('storager will serve forever')
+        logging.info('Storage will serve forever')
         gevent.joinall(job_lst)

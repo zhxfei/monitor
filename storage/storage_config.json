@@ -1,14 +1,14 @@
 {
-    "debug": false,
-    "logfile": "/home/easemonitor/log/storage.log",
+    "debug": true,
+    "logfile": "",
     "node_name": "store-00",
     "thread_sleep": 0.5,
-    "concurrency_num": 1,
+    "concurrency_num": 5,
     "queue": {
       "enabled": true,
       "type": "redis",
       "queue_suffix": "monitor_queue",
-      "batch": 1000,
+      "batch": 50,
       "addr": {
         "host": "localhost",
         "port": 6379,
@@ -22,6 +22,6 @@
       "port": 30000,
       "user": "easy_monitor",
       "db_name": "easy_monitor",
-      "document_name": "monitor_60"
+      "document_name": "monitor_dev_test"
     }
 }

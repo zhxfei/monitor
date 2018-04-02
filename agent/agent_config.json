@@ -5,7 +5,7 @@
     "ip": "",
     "transfer": {
         "enabled": true,
-        "addr": "10.83.3.46:4444",
+        "addr": "localhost:4444",
         "interval": 60,
         "timeout": 30,
         "headbeat": 5
