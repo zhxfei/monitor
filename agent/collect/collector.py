@@ -62,6 +62,7 @@ class PsUtilsCollector(Collector):
                 if format_data:
                     queue.put(format_data)
             cost_time = str(time.time() - t_start)
+
             logging.debug('Data Collect By %s Once Cost: %s' % ("PsUtilsCollector", cost_time))
             gevent.sleep(self.interval)
 

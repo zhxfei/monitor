@@ -9,6 +9,10 @@ from transfer.utils.data_formater import check_data_is_format
 
 data_app = Flask(__name__)
 
+STATUS_OK = 200
+STATUS_NOT_FORMAT = 400
+STATUS_UNKNOWN_ERROR = 401
+
 
 @data_app.route('/v1/data_push', methods=['POST'])
 def data_upload():
@@ -31,8 +35,6 @@ def data_upload():
         if data_is_format:
             for item_data in data_lst:
                 # for data process
-
-                # get key from item_data
                 with data_app.app_context():
                     status, reason = data_process(item_data, current_app.cache_queue_map)
 
@@ -42,32 +44,47 @@ def data_upload():
                         res['ok'] = False
                         res['msg'] += reason
             logging.debug('http server receiver succeed: %s' % res['msg'])
-            return jsonify(res), 200
+            return jsonify(res), STATUS_OK
         else:
             res = {'ok': False, 'msg': 'Unsupported Data Format'}
             logging.info('http server receiver error: %s' % res['msg'])
-            return jsonify(res), 400
+            return jsonify(res), STATUS_NOT_FORMAT
     except Exception as e:
         res = {'ok': False, 'msg': 'Unknown Error'}
         logging.info('http server receiver error: %s' % e)
-        return jsonify(res), 401
+        return jsonify(res), STATUS_UNKNOWN_ERROR
 
 
-class HttpServer:
-    def __init__(self, http_host=None, http_port=None, cache_queue_map=None):
-        self.http_host = http_host or 'localhost'
-        self.http_port = http_port or 8080
+class BaseServer:
+    def __init__(self, host=None, port=None, cache_queue_map=None):
+        self.host = host
+        self.port = port
+        self.cache_queue_map = cache_queue_map
+        self.server = self.server_setup()
 
+    def server_setup(self):
+        raise NotImplementedError
+
+    def serve_forever(self):
+        raise NotImplementedError
+
+
+class HTTPServer(BaseServer):
+    def server_setup(self):
         global data_app
         with data_app.app_context():
-            current_app.cache_queue_map = cache_queue_map or None
-        self.server = WSGIServer((self.http_host, self.http_port), data_app)
+            current_app.cache_queue_map = self.cache_queue_map
+        server = WSGIServer((self.host, self.port), data_app)
+        return server
 
     def serve_forever(self):
         try:
-            logging.info("HTTP-server(Common API) will running at %s:%d" % (self.http_host,
-                                                                            self.http_port))
+            logging.info("HTTP-server(Common API) binding at %s:%d" % (self.host, self.port))
             self.server.serve_forever()
-        except Exception as e:
+        except Exception as error_info:
             logging.error("HTTP-server(Common API) run error")
-            logging.error(e)
+            logging.error(error_info)
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)

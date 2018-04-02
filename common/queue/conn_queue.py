@@ -10,12 +10,12 @@ class BaseQueue:
         self.queue_name = queue_suffix + ':' + backend_type
         self.queue = connection
 
-    def put(self, request):
-        """Push a data"""
+    def put(self, data):
+        """Push data"""
         raise NotImplementedError
 
     def get(self, batch, timeout=0):
-        """Pop a data"""
+        """Pop data with batch """
         raise NotImplementedError
 
     def get_len(self):
@@ -37,14 +37,16 @@ class RedisQueue(BaseQueue):
 
     def get(self, batch, timeout=1):
         '''
-        get data from queue
-        :param batch:
-        :param timeout:
+        get data from queue by batch
+        :param batch: int
+                data numbers queue pop once
+        :param timeout: int
+                when queue pop data, the operation will block and wait some time for data
         :return: tuple
             tuple(True, data_lst) is mean the redis queue is empty
                         data_lst is the last data
             tuple(False, data_lst) is mean the redis queue is not empty,
-                        data_lst is  data and type(data) is list with dict
+                        data_lst is  data and data type is list with dict
         '''
         count = 0
         data_lst = list()

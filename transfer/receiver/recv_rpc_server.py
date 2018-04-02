@@ -3,6 +3,7 @@ import logging
 
 import zerorpc
 
+from transfer.receiver.recv_http_server import BaseServer
 from transfer.receiver.data_process import data_process
 from transfer.utils.data_formater import check_data_is_format
 
@@ -20,9 +21,7 @@ class UploadDataModule:
         if is_format:
             for item_data in data_lst:
                 # for data process
-
-                status, reason = data_process(item_data,
-                                              self.cache_queue_map)
+                status, reason = data_process(item_data, self.cache_queue_map)
 
                 if status:
                     res['ok'] = True
@@ -39,17 +38,21 @@ class UploadDataModule:
             return json.dumps(res)
 
 
-class RpcServer:
-    def __init__(self, listen, cache_queue_map):
-        self.rpc_listen = "tcp://" + listen
-        self.cache_queue_map = cache_queue_map
+class RPCServer(BaseServer):
+    def server_setup(self):
+        listen = "tcp://%s:%d" % (self.host, self.port)
+        server = zerorpc.Server(UploadDataModule(cache_queue_map=self.cache_queue_map))
+        server.bind(listen)
+        logging.info('RPC-server binding at %s' % listen)
+        return server
 
-    def server_forever(self):
+    def serve_forever(self):
         try:
-            s = zerorpc.Server(UploadDataModule(cache_queue_map=self.cache_queue_map))
-            s.bind(self.rpc_listen)
-            logging.info('RPC-server will running %s' % self.rpc_listen)
-            s.run()
-        except Exception as e:
+            self.server.run()
+        except Exception as error_info:
             logging.error('RPC-server run error')
-            logging.error(e)
+            logging.error(error_info)
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)

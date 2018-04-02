@@ -17,9 +17,9 @@ class MonitorAgent:
             self.config    config parser
                 read configuration from config file and get data sender and data collector
             self.collector
-                for data collect class
+                for data collect
             self.sender
-                for data send class
+                for data send
             self.queue
                 transfer data from collector to sender, it is a FIFO Queue
     """

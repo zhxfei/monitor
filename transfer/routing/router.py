@@ -10,8 +10,8 @@ from gevent.queue import Queue
 from common.connections.conn_pool import RedisConnPool
 from common.queue.conn_queue import RedisQueue
 from transfer.config.config_parser import TransferConfigParser
-from transfer.receiver.recv_http_server import HttpServer
-from transfer.receiver.recv_rpc_server import RpcServer
+from transfer.receiver.recv_http_server import HTTPServer
+from transfer.receiver.recv_rpc_server import RPCServer
 from transfer.sender.redis_sender import send_to_backend
 
 
@@ -131,7 +131,7 @@ class Router:
     def _rpc_srv_conf_init(self):
         """init rpc server basic config, agent will use it """
         self._rpc_server_listen = self.config.var_dict['rpc']['listen']
-        self._rpc_server = RpcServer(
+        self._rpc_server = RPCServer(
             listen=self._rpc_server_listen,
             cache_queue_map=self.cache_queue_map
         )

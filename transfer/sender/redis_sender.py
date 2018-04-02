@@ -5,6 +5,7 @@ import gevent
 from common.queue.exceptions import QueueFullException
 
 
+
 def send_to_backend(redis_q, cache_q, sender_wait_time, sender_retry_times):
     while not cache_q.empty():
         data = cache_q.get_nowait()
