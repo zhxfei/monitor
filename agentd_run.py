@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 
-from agent.monitor_agentd.agentd import MonitorAgent
+from agent.agentd.agentd import MonitorAgent
 
 if __name__ == '__main__':
     description = '''Monitor agent design for data collect'''
@@ -10,7 +10,8 @@ if __name__ == '__main__':
     parser.add_argument('-c',
                         '--config',
                         metavar='CONF_FILE_PATH',
-                        required=True,
+                        required=False,
+                        default='/home/zhxfei/PycharmProjects/EaseMonitorBak/agent/agent_config.json',
                         dest='config_path',
                         action='store',
                         help='define Monitor Agent configuration file path')
@@ -19,8 +20,7 @@ if __name__ == '__main__':
 
         agent = MonitorAgent()
         agent.config_init(args.config_path)
-
-        agent.data_collect_loop()
+        agent.serve_forever()
     except KeyboardInterrupt as e:
         logging.info("!!! Agent exit")
         sys.exit(0)

@@ -1,15 +1,17 @@
 {
-    "debug": false,
-    "logfile": "/home/easemonitor/log/agentd.log",
-    "hostname": "",
-    "ip": "",
+    "debug": true,
+    "logfile": "",
     "transfer": {
-        "enabled": true,
-        "addr": "localhost:4444",
-        "interval": 60,
+        "host": "localhost",
+        "port": 4444,
         "timeout": 30,
-        "headbeat": 5
+        "heartbeat": 5
     },
-    "ignore": {
+    "collector": {
+        "hostname": "",
+        "ip": "",
+        "interval": 60,
+        "ignore": [
+        ]
     }
 }

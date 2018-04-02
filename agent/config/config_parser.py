@@ -1,17 +1,34 @@
+import sys
+
+import agent.config.default_config as default_config
+from agent.collect.collector import PsUtilsCollector
+from agent.sender.rpc_client_sender import AgentRPCClient
 from common.config.config_parser import ConfigParser
 
 
 class AgentConfigParser(ConfigParser):
+    """
+        read configuration from config file and default config for Agent
+        get data sender and data collector
+    """
     def config_parse(self):
-        for con_n, con_v in self._var_dict.items():
-            if con_n == 'ignore':
-                ignore_item_list = [ignore_item for ignore_item, ignore_stat in con_v.items()
-                                    if ignore_stat is True]
-                self.var_dict['ignore'] = ignore_item_list
-            elif con_n == 'transfer' and con_v.get('enabled'):
-                self.var_dict['transfer_addr'] = con_v.get('addr')
-                self.var_dict['transfer_timeout'] = con_v.get('timeout')
-                self.var_dict['transfer_headbeat'] = con_v.get('headbeat')
-                self.var_dict['collect_interval'] = con_v.get('interval')
-            else:
-                self.var_dict[con_n] = con_v
+        """parse configuration from config file and default config"""
+        collector_params = default_config.COLLECTOR_DEFAULT_CONF.copy()
+        transfer_params = default_config.TRANSFER_DEFAULT_CONF.copy()
+        try:
+            collector_params.update(self.get_dict('collector'))
+            transfer_params.update(self.get_dict('transfer'))
+        except ValueError as error_info:
+            sys.stderr.write(error_info)
+        else:
+            self.var_dict = self.get_raw_dict()
+            self.var_dict['collector'] = collector_params
+            self.var_dict['transfer'] = transfer_params
+
+    def get_collector_from_config(self):
+        """ get collector from config """
+        return PsUtilsCollector.from_config(self.var_dict['collector'])
+
+    def get_sender_from_config(self):
+        """ get sender from config """
+        return AgentRPCClient.from_config(self.var_dict['transfer'])
