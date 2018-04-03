@@ -18,6 +18,6 @@
 #         data = json.dumps(data_lst)
 #         print('data will send to rpc server')
 #         # print(data)
-# #        res = self.rpc_client.upload_data(data, async=False)
-# #        print(res)
+#         res = self.rpc_client.upload_data(data, async=False)
+#         print(res)
 #         return

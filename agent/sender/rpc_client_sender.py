@@ -8,12 +8,13 @@ from agent.sender.base_sender import Sender
 from common.rpc.rpc_client import RPCClient
 
 
-class AgentRPCClient(Sender, RPCClient):
+class AgentRPCClient(RPCClient, Sender):
     """
-        Agent RPC client: Extents sender and RPCClient
+        Agent RPC client: agent sender with RPCClient
             RPCClient: init a rpc client
             Sender : data send logic
     """
+
     def data_send(self, data):
         """ send data with rpc client """
         data_encoded = self.send_data_encode(data)

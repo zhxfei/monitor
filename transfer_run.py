@@ -7,10 +7,10 @@ from transfer.routing.router import Router
 if __name__ == '__main__':
     description = '''Monitor transfer design for data routing'''
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-c',
-                        '--config',
+    parser.add_argument('-c', '--config',
                         metavar='CONF_FILE_PATH',
-                        required=True,
+                        required=False,
+                        default='/home/zhxfei/PycharmProjects/EaseMonitorBak/transfer/transfer_config.json',
                         dest='config_path',
                         action='store',
                         help='define Monitor transfer configuration file path')

@@ -33,9 +33,8 @@ def data_upload():
         }
 
         if data_is_format:
-            for item_data in data_lst:
-                # for data process
-                with data_app.app_context():
+            with data_app.app_context():
+                for item_data in data_lst:
                     status, reason = data_process(item_data, current_app.cache_queue_map)
 
                     if status:
@@ -56,6 +55,8 @@ def data_upload():
 
 
 class BaseServer:
+    """Base server class for http server and rpc server """
+
     def __init__(self, host=None, port=None, cache_queue_map=None):
         self.host = host
         self.port = port
@@ -63,14 +64,17 @@ class BaseServer:
         self.server = self.server_setup()
 
     def server_setup(self):
+        """ abstract method for server setup"""
         raise NotImplementedError
 
     def serve_forever(self):
+        """ abstract method for server start serve loop"""
         raise NotImplementedError
 
 
 class HTTPServer(BaseServer):
     def server_setup(self):
+        """ HTTP server setup"""
         global data_app
         with data_app.app_context():
             current_app.cache_queue_map = self.cache_queue_map
@@ -78,6 +82,7 @@ class HTTPServer(BaseServer):
         return server
 
     def serve_forever(self):
+        """ HTTP server start serve loop """
         try:
             logging.info("HTTP-server(Common API) binding at %s:%d" % (self.host, self.port))
             self.server.serve_forever()
@@ -87,4 +92,10 @@ class HTTPServer(BaseServer):
 
     @classmethod
     def from_config(cls, config):
+        """
+        get http server instance from config
+        :param config: dict
+        :return: HTTPServer
+
+        """
         return cls(**config)

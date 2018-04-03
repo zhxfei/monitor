@@ -1,21 +1,30 @@
 """
-改进： rpc逻辑简化,rpc 服务接收数据,写入本地定长的cache queue,之后worker greenlet 进行数据转发到redis队列
-      当后端redis挂掉，本地的内存可以做部分的缓存
+this module for data process
 """
 
 import logging
 
 from gevent.queue import Full
 
+QUEUE_FULL_MESSAGE = 'queue is full'
+QUEUE_IN_MESSAGE = "push data in queue succeed"
+
 
 def data_process(item_data, cache_queue_map):
+    """
+    process data in http server and rpc server
+    :param item_data: dict
+            monitor item data from agent upload
+    :param cache_queue_map: dict
+            a dict with backend_type and cache_queue (because every backend has a cache queue)
+    :return: tuple
+            The action (push in queue) status and some message info
+    """
     try:
-        for _, q in cache_queue_map.items():
-            q.put_nowait(item_data)
-        return True, 'cache_queue in'
-    except Full as e:
-        logging.error('queue is full, %s' % e)
-        return False, 'queue is full'
-    except Exception as e:
-        logging.error('Unknown error, %s' % e)
-        return False, 'Unknown error'
+        for _, queue in cache_queue_map.items():
+            queue.put_nowait(item_data)
+    except Full as error_info:
+        logging.error('queue is full, %s' % error_info)
+        return False, QUEUE_FULL_MESSAGE
+    else:
+        return True, QUEUE_IN_MESSAGE

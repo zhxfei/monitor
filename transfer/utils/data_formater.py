@@ -1,14 +1,15 @@
 import json
 import logging
 
-standard_format = [
+STANDARD_FORMAT = (
     'tags',
     'value',
     'metric',
     'counterType',
     'timestamp',
     'step'
-]
+)
+NOT_FORMAT_INFO = "data contains key not in %s" % "/".join(STANDARD_FORMAT)
 
 
 def check_data_is_format(data):
@@ -22,23 +23,16 @@ def check_data_is_format(data):
         if not isinstance(data, list):
             data_lst = json.loads(data)
 
-        for d in data_lst:
-            assert isinstance(d, dict), ValueError("data contains not dict")
+        for data in data_lst:
+            assert isinstance(data, dict), ValueError("data contains not dict")
 
-            for key in d.keys():
-                assert key in standard_format, ValueError(
-                    "data contains key not in %s" % "/".join(standard_format))
-
-        return True, data_lst
-
+            for key in data.keys():
+                assert key in STANDARD_FORMAT, ValueError(NOT_FORMAT_INFO)
     except ValueError as e:
         logging.error("data format check error %s" % e)
         return False, None
     except Exception as e:
         logging.error("data format check unknown error %s" % e)
         return False, None
-
-
-def item_key_gen(item_data):
-    info = item_data['tags'] + item_data['endpoint'] + item_data['metric']
-    return info
+    else:
+        return True, data_lst

@@ -1,9 +1,10 @@
 {
-  "debug": false,
-  "logfile": "/home/easemonitor/log/transfer.log",
+  "debug": true,
+  "logfile": "",
   "router": {
-    "max_queue_len": 100000,
-    "concurrency_num": 1
+    "max_queue_length": 100000, 
+    "concurrency_num": 1,
+    "backend_nodes": ["store"]
   },
   "receiver": {
     "http": {
@@ -18,14 +19,18 @@
     }
   },
   "sender": {
-    "retry_times": 2,
-    "wait_time": 5,
-    "sleep_time": 1,
-    "queue_suffix": "monitor_queue",
-    "queue": {
-      "host": "localhost",
-      "port": 6379,
-      "db": 0
+    "store": {
+      "max_queue_len": 100000,
+      "retry_times": 2,
+      "wait_time": 5,
+      "sleep_time": 1,
+      "queue_suffix": "monitor_queue",
+      "queue": {
+        "type": "redis",
+        "host": "localhost",
+        "port": 6379,
+        "db": 0
+      }
     }
   }
 }

@@ -1,4 +1,9 @@
+"""
+ This module set the default config
+"""
+
 import logging
+import os
 
 DEFAULT_LOG_LEVEL = logging.INFO
 
@@ -14,10 +19,12 @@ DEFAULT_RPC_SERVER_CONF = {
 
 DEFAULT_ROUTER_CONF = {
     "max_queue_len": 100000,
-    "concurrency_num": 1
+    "concurrency_num": 1,
+    "backend_nodes": ['store']
 }
 
 DEFAULT_SENDER_CONF = {
+    "max_queue_len": 100000,
     "retry_times": 2,
     "wait_time": 5,
     "sleep_time": 1,
@@ -25,6 +32,9 @@ DEFAULT_SENDER_CONF = {
     "queue": {
         "host": "localhost",
         "port": 6379,
-        "db": 0
+        "db": 0,
+        "password": os.getenv('REDIS_PASS', None)
     }
 }
+
+SENDER_TYPE_REDIS = 'redis'

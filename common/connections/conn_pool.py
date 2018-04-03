@@ -19,3 +19,6 @@ class RedisConnPool:
 
         return self._conn
 
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
