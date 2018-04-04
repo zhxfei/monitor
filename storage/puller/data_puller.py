@@ -1,26 +1,18 @@
+"""
+ the module define puller component, get data from transfer queue
+"""
+
 from common.queue.conn_queue import RedisQueue
-from common.connections.conn_pool import RedisConnPool
 
 
-class DataPuller:
+class DataPuller(RedisQueue):
     """
-    max_queue_len=None, queue_suffix=None,
-                 backend_type=None, connection_params=None):
+        pull data from redis queue
     """
-    def __init__(self, host=None, port=None, db=None, password=None,
-                 queue_name=None, backend_type=None,
-                 batch=None):
-        self._queue_name = queue_name
-        self._max_batch = batch
 
-        self.queue = RedisQueue(
-            queue_suffix=queue_name,
-            backend_type=backend_type,
-            connection=self._redis_conn.get_conn()
-        )
+    def pull_data(self, batch):
+        return self.get(batch=batch, timeout=1)
 
-    def status_check(self):
-        return self._redis_conn.status_check()
-
-    def pull_data(self):
-        return self.queue.get(batch=self._max_batch, timeout=1)
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)

@@ -1,3 +1,8 @@
+import socket
+
+DEFAULT_HOST_NAME = socket.gethostname()
+DEFAULT_IP = socket.gethostbyname(DEFAULT_HOST_NAME)
+
 DEFAULT_LOG_LEVEL = "INFO"
 
 COLLECTOR_DEFAULT_CONF = {

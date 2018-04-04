@@ -5,8 +5,12 @@ from common.connections.conn_pool import RedisConnPool
 
 
 class BaseQueue:
-    def __init__(self, max_queue_len=None, queue_suffix=None,
-                 backend_type=None, connection_params=None):
+    def __init__(
+            self,
+            max_queue_len=None,
+            queue_suffix=None,
+            backend_type=None,
+            connection_params=None):
         """
         the base class for queue
         :param max_queue_len: int

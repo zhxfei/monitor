@@ -6,7 +6,7 @@ from datetime import datetime
 import gevent
 
 from agent.collect.sys_status_collect import ps_utils_collect_funcs
-
+from agent.config.default_config import DEFAULT_HOST_NAME, DEFAULT_IP
 
 class Collector:
     """base collector"""
@@ -14,8 +14,8 @@ class Collector:
     def __init__(self, hostname=None, ip=None, interval=None, ignore=None):
         self.interval = interval
         self.ignore = ignore
-        self.hostname = hostname or socket.gethostname()
-        self.ip = ip or socket.gethostbyname(self.hostname)
+        self.hostname = hostname or DEFAULT_HOST_NAME
+        self.ip = ip or DEFAULT_IP
 
     def data_model_format(self, data, timestamps):
         """ data build format """
@@ -70,6 +70,6 @@ class PsUtilsCollector(Collector):
     def from_config(cls, config):
         """ get instance from config
         :param config dict
-            the dict in agent configuration file about collector
+            the dict with __init__ params
         """
         return cls(**config)

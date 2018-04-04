@@ -1,135 +1,86 @@
 import signal
-import os
-import time
 import logging
-import sys
 
 import gevent
 
 from storage.config.config_parser import StorageConfigParser
-from storage.puller.data_puller import DataPuller
-from storage.db.mongo_clt import DatabaseClient
+from storage.config.default_config import (DEFAULT_LOG_LEVEL,
+                                           DEFAULT_BATCH,
+                                           DEFAULT_CONCURRENCY_NUM,
+                                           DEFAULT_SLEEP)
 
 
 class DataStorage:
     def __init__(self):
         self.config = None
-        self.basic_info = dict()
-        self._node_name = None
         self.db_clt = None
         self.puller = None
 
-    def basic_init(self):
-        pass
+        self.thread_sleep_time = None
+        self.batch = None
 
     def config_init(self, config_path):
-        self.basic_init()
         self.config = StorageConfigParser(config_path)
         self._log_init()
-        self._service_init()
 
-    def _service_init(self):
-        try:
-            self._node_init()
-            self._db_conn_init()
-            self._puller_init()
-        except Exception as e:
-            logging.error("!!! Service config load error")
-            logging.error(e)
-            sys.exit(2)
+        self._storage_init()
+        self._db_conn_init()
+        self._puller_init()
 
     def _log_init(self):
         """ log init """
         logging.basicConfig(
             filename=self.config.var_dict.get('logfile') or None,
-            level=logging.DEBUG if self.config.var_dict.get('debug') else logging.INFO,
+            level=logging.DEBUG if self.config.var_dict.get('debug') else DEFAULT_LOG_LEVEL,
             format='%(levelname)s:%(asctime)s:%(message)s'
         )
         logging.info('logger init succeed')
 
-    def _node_init(self):
-        self._node_name = self.config.var_dict['node_name']
-        self._node_type = self._node_name.split('-')[0]
-        self._concurrency_num = self.config.var_dict.get('concurrency_num') or 10
-        self._thread_sleep_time = self.config.var_dict.get('thread_sleep') or 2
+    def _storage_init(self):
+        """ storage init """
+        self.thread_sleep_time = self.config.var_dict.get('thread_sleep') or DEFAULT_SLEEP
+        self.batch = self.config.var_dict.get('batch') or DEFAULT_BATCH
 
-        assert ":" not in self._node_name, ValueError("node name could't contains ':' !")
         logging.info('node config init succeed')
 
     def _db_conn_init(self):
-        db_pass = os.getenv('MONGO_PASS', None)
-
-        db_host = self.config.var_dict['database']['host']
-        db_port = self.config.var_dict['database']['port']
-        db_user = self.config.var_dict['database']['user']
-        db_name = self.config.var_dict['database']['db_name']
-        document_name = self.config.var_dict['database']['document_name']
-        try:
-            self.db_clt = DatabaseClient(
-                db_host=db_host,
-                db_port=db_port,
-                db_name=db_name,
-                db_user=db_user,
-                db_pass=db_pass,
-                document_name=document_name
-            )
-            _ = self.db_clt.document_count()
-        except Exception as e:
-            logging.error("Database Connection Init Error %s" % e)
-            sys.exit(6)
-        else:
-            logging.info('Database Connection Init Succeed')
+        """ setup the database connection"""
+        self.db_clt = self.config.get_db_from_config()
+        logging.info('db connection init succeed')
 
     def _puller_init(self):
-        if self.config.var_dict['queue']['type'] == 'redis':
-            redis_pass = os.getenv('REDIS_PASS', None)
-
-            redis_host = self.config.var_dict['queue']['addr']['host']
-            redis_port = self.config.var_dict['queue']['addr']['port']
-            redis_db = self.config.var_dict['queue']['addr']['db']
-            queue_suffix = self.config.var_dict['queue']['queue_suffix']
-            backend_type = self._node_type
-
-            self._batch = self.config.var_dict['queue']['batch']
-            try:
-                self.puller = DataPuller(
-                    host=redis_host,
-                    port=redis_port,
-                    db=redis_db,
-                    password=redis_pass,
-                    queue_name=queue_suffix,
-                    backend_type=backend_type,
-                    batch=self._batch
-                )
-            except ValueError as e:
-                logging.error("Data Puller Init Error: %s" % e)
-                sys.exit(5)
-            else:
-                logging.info('Data Puller Init Succeed')
+        """ setup the puller """
+        self.puller = self.config.get_puller_from_config()
+        logging.info('Puller init succeed')
 
     def _pull_and_storage(self, job_id):
+        """
+        pull data from queue and insert to database
+        :param job_id: int
+        """
         while True:
             while True:
-                t1 = time.time()
-                queue_is_empty, data = self.puller.pull_data()
+                queue_is_empty, data = self.puller.pull_data(self.batch)
                 if data:
-                    res = self.db_clt.data_insert(data)
-                    if res:
-                        logging.debug("Insert Succeed")
-                        logging.debug("Insert {} data Cost:{}".format(self._batch, time.time() - t1))
+                    status = self.db_clt.data_insert(data)
+                    if status:
+                        logging.debug("Pull data and insert Succeed")
                     else:
                         logging.error("Insert Error")
 
                 if queue_is_empty:
                     break
-            logging.debug("current greenlet id {} is free,queue is empty".format(job_id))
-            gevent.sleep(self._thread_sleep_time)
+
+            logging.debug("Queue is empty, job id: %d" % job_id)
+            gevent.sleep(self.thread_sleep_time)
 
     def storage_forever(self):
-        gevent.signal(signal.SIGQUIT, gevent.kill)
-
+        """ storage serve loop"""
+        num = self.config.var_dict.get('concurrency_num') or DEFAULT_CONCURRENCY_NUM
         job_lst = list()
-        for job_id in range(0, self._concurrency_num):
+
+        gevent.signal(signal.SIGQUIT, gevent.kill)
+        for job_id in range(0, num):
             job_lst.append(gevent.spawn(self._pull_and_storage, job_id))
 
         logging.info('Storage will serve forever')

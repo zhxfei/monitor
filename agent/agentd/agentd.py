@@ -21,7 +21,7 @@ class MonitorAgent:
             self.sender
                 for data send
             self.queue
-                transfer data from collector to sender, it is a FIFO Queue
+                store data for collector, it's a FIFO Queue
     """
 
     def __init__(self):
