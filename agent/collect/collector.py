@@ -30,8 +30,8 @@ class Collector:
                     "value": item_value,
                     "counterType": 'GAUGE',
                     "tags": {
-                        "host_ip": self.hostname,
-                        "hostname": self.ip
+                        "host_ip": self.ip,
+                        "hostname": self.hostname
                     }
                 }
                 data_lst.append(item_dict)
