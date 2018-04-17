@@ -11,10 +11,10 @@ class Router(object):
     def __init__(self):
         """
         route data from receiver to sender and help receiver/sender setup,
-        router provide a cache_queue map, the map key is backend type, and value is a queue.
+        router provide a cache_queue map, the map's key is backend type, like store or other, and value is a queue.
 
-        receiver: a module for receive data from agent and any process who called common API
-                    by HTTP, receiver will setup a http server and rpc server.
+        receiver: a component for receive data from agent or any process who called API
+                    by HTTP or RPC service, receiver will setup a http server and rpc server.
         router: receiver and sender helper, provide a cache queue map for backend,
                     receiver will push data in cache queue, and sender will consume the data.
         sender: send data to backend, pop data from cache queue and send to the backend.
@@ -32,7 +32,7 @@ class Router(object):
         """
         config init
         :param config_path: str
-                configuration path
+                init configuration
         """
         self.config = TransferConfigParser(config_path)
         self._log_init()

@@ -15,11 +15,11 @@ class MonitorAgent:
         Monitor Agent: The main program logic
         :attr
             self.config    config parser
-                read configuration from config file and get data sender and data collector
+                read configuration from config file and get data sender and data collector setup and instance
             self.collector
-                for data collect
+                for data collect, collect system item data and push into the cache queue
             self.sender
-                for data send
+                for data send, consume the data and send to transfer
             self.queue
                 store data for collector, it's a FIFO Queue
     """
@@ -49,12 +49,14 @@ class MonitorAgent:
     def sender_init(self):
         """ init sender module """
         self.sender = self.config.get_sender_from_config()
-        logging.info("Sender init succeed")
+        if not self.sender:
+            logging.info("Sender init succeed")
 
     def collector_init(self):
         """ init data collector module """
         self.collector = self.config.get_collector_from_config()
-        logging.info("Collector init succeed")
+        if not self.collector:
+            logging.info("Collector init succeed")
 
     def serve_forever(self):
         """ agent serve loop """

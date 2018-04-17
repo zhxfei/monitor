@@ -24,10 +24,11 @@ def check_data_is_format(data):
             data_lst = json.loads(data)
 
         for data in data_lst:
-            assert isinstance(data, dict), ValueError("data contains not dict")
+            if not isinstance(data, dict):
+                raise ValueError("data contains not dict")
 
             for key in data.keys():
-                assert key in STANDARD_FORMAT, ValueError(NOT_FORMAT_INFO)
+                check_type(key)
     except ValueError as e:
         logging.error("data format check error %s" % e)
         return False, None
@@ -36,3 +37,8 @@ def check_data_is_format(data):
         return False, None
     else:
         return True, data_lst
+
+
+def check_type(key):
+    if key not in STANDARD_FORMAT:
+        raise ValueError(NOT_FORMAT_INFO)

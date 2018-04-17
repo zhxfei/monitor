@@ -4,8 +4,7 @@ from api.common.mongo_clt import create_conn
 
 
 class MonitorData(Resource):
-    def __init__(self, *args, **kwargs):
-        super(MonitorData, self).__init__(*args, **kwargs)
+    def __init__(self):
         self.conn = create_conn()
         self.post_parser = reqparse.RequestParser()
         self.post_parser.add_argument(

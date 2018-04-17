@@ -1,6 +1,6 @@
-import zerorpc
-
 import logging
+
+import zerorpc
 
 
 class RPCClient:

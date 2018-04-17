@@ -1,7 +1,7 @@
 from ast import literal_eval
 
 from .exceptions import QueueFullException
-from common.connections.conn_pool import RedisConnPool
+from common.connections.redis_conn_pool import RedisConnPool
 
 
 class BaseQueue:

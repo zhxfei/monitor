@@ -11,7 +11,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 
-class DatabaseClient:
+class MONGOClient:
     db_url = "mongodb://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
 
     def __init__(self, host=None, port=None,

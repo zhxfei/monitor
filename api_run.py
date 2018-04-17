@@ -35,16 +35,14 @@ def output_json(data, code, headers=None):
 if __name__ == '__main__':
     description = '''EaseMonitor Restful API design for data search'''
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-a',
-                        '--host',
+    parser.add_argument('-a', '--host',
                         required=True,
                         dest='host',
                         type=str,
                         action='store',
                         help='define Monitor API server host listening')
 
-    parser.add_argument('-p',
-                        '--port',
+    parser.add_argument('-p', '--port',
                         required=True,
                         dest='port',
                         type=int,

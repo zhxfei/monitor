@@ -8,6 +8,7 @@ import gevent
 from agent.collect.sys_status_collect import ps_utils_collect_funcs
 from agent.config.default_config import DEFAULT_HOST_NAME, DEFAULT_IP
 
+
 class Collector:
     """base collector"""
 

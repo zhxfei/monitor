@@ -5,8 +5,7 @@ from api.common.mongo_clt import create_conn
 class HostList(Resource):
     """ read only """
 
-    def __init__(self, *args, **kwargs):
-        super(HostList, self).__init__(*args, **kwargs)
+    def __init__(self):
         self.conn = create_conn()
 
     def get(self):
@@ -17,8 +16,7 @@ class HostList(Resource):
 class IpList(Resource):
     """ read only """
 
-    def __init__(self, *args, **kwargs):
-        super(IpList, self).__init__(*args, **kwargs)
+    def __init__(self):
         self.conn = create_conn()
 
     def get(self):

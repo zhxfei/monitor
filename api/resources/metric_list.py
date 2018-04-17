@@ -3,8 +3,7 @@ from api.common.mongo_clt import create_conn
 
 
 class MetricList(Resource):
-    def __init__(self, *args, **kwargs):
-        super(MetricList, self).__init__(*args, **kwargs)
+    def __init__(self):
         self.conn = create_conn()
         self.get_parser = reqparse.RequestParser()
         self.get_parser.add_argument(

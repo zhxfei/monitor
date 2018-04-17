@@ -1,7 +1,7 @@
 import sys
 
 import storage.config.default_config as default_config
-from storage.db.mongo_clt import DatabaseClient
+from common.connections.mongo_conn import MONGOClient
 from storage.puller.data_puller import DataPuller
 from common.config.config_parser import ConfigParser
 
@@ -29,7 +29,7 @@ class StorageConfigParser(ConfigParser):
 
         if database_type == default_config.DEFAULT_DATABASE_TYPE:
             # get database from  type
-            return DatabaseClient.from_config(database_config)
+            return MONGOClient.from_config(database_config)
 
     def get_puller_from_config(self):
         """ get puller instance from configuration """

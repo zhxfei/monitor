@@ -7,8 +7,7 @@ from agent.agentd.agentd import MonitorAgent
 if __name__ == '__main__':
     description = '''Monitor agent design for data collect'''
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-c',
-                        '--config',
+    parser.add_argument('-c', '--config',
                         metavar='CONF_FILE_PATH',
                         required=False,
                         default='/home/zhxfei/PycharmProjects/EaseMonitorBak/agent/agent_config.json',
