@@ -33,7 +33,7 @@ def get_disks_info(all_partitions=False):
         disk_info = {
             # 'df.bytes.total': usage.total,
             # 'df.bytes.used': usage.used,
-            'df.bytes.used.percent.%s.%s.%s' % (info.mountpoint, info.device, info.fstype): usage.percent,
+            'df.bytes.used.percent.%s' % info.mountpoint: usage.percent,
             # 'df.bytes.free': usage.free,
         }
 
