@@ -1,45 +1,47 @@
 #### 项目目录结构
 ```shell
-(env) zhxfei@HP-ENVY:~/workspace/netease/EaseMonitor$ ls -l
-总用量 48
-drwxrwxr-x  6 zhxfei zhxfei 4096 4月   1 00:08 agent     # agent 源码目录
--rw-rw-r--  1 zhxfei zhxfei  935 4月   1 00:08 agentd_run.py # agent 启动入口
--rwxrwxr-x  1 zhxfei zhxfei 3765 4月   1 00:08 agent_run.sh  # agent 起停脚本
-drwxrwxr-x  4 zhxfei zhxfei 4096 4月   1 00:08 api           # api 源码目录
--rw-rw-r--  1 zhxfei zhxfei 1623 4月   1 00:08 api_run.py    # api 启动入口
--rw-rw-r--  1 zhxfei zhxfei  291 4月   1 00:08 Dockerfile    # dockerfile文件
--rw-rw-r--  1 zhxfei zhxfei  368 4月   1 00:08 requirments.txt   # 项目的依赖文件
--rwxrwxr-x  1 zhxfei zhxfei  424 4月   1 00:08 run.sh        # dockerfile依赖的 run
-drwxrwxr-x  6 zhxfei zhxfei 4096 4月   1 00:08 storage       # storage 源码目录
--rw-rw-r--  1 zhxfei zhxfei  970 4月   1 00:08 storage_run.py # storage 启动入口
-drwxrwxr-x 11 zhxfei zhxfei 4096 4月   1 00:08 transfer      # transfer 源码目录
--rw-rw-r--  1 zhxfei zhxfei  946 4月   1 00:08 transfer_run.py  # transfer 启动入口
+zhxfei@HP-ENVY:~/PycharmProjects/EaseMonitorBak$ ls -l
+总用量 64
+drwxrwxr-x 7 zhxfei zhxfei 4096 4月  17 12:44 agent      # agent 源码目录
+-rw-rw-r-- 1 zhxfei zhxfei 1002 4月   8 13:30 agentd_run.py  # agent 启动入口
+-rwxrwxr-x 1 zhxfei zhxfei 3765 3月  31 19:13 agent_run.sh   # agent 起停脚本
+drwxrwxr-x 5 zhxfei zhxfei 4096 3月  30 03:17 api            # api 源码目录
+-rw-rw-r-- 1 zhxfei zhxfei 1575 4月   8 14:16 api_run.py     # api 启动入口
+drwxrwxr-x 7 zhxfei zhxfei 4096 4月   2 23:21 common         # 项目组件复用的模块
+-rw-rw-r-- 1 zhxfei zhxfei  291 3月  30 03:17 Dockerfile     # dockerfile文件
+drwxrwxr-x 6 zhxfei zhxfei 4096 3月  30 03:17 env
+-rw-rw-r-- 1 zhxfei zhxfei 5365 4月   1 00:35 README.md
+-rw-rw-r-- 1 zhxfei zhxfei  368 3月  30 03:17 requirments.txt     # 项目的依赖文件
+-rwxrwxr-x 1 zhxfei zhxfei  424 3月  31 22:40 run.sh          # dockerfile依赖的 run
+drwxrwxr-x 6 zhxfei zhxfei 4096 4月   8 14:02 storage         # storage 源码目录
+-rw-rw-r-- 1 zhxfei zhxfei 1052 4月   8 14:16 storage_run.py     # storage 启动入口
+drwxrwxr-x 8 zhxfei zhxfei 4096 4月   4 01:57 transfer           # transfer 源码目录
+-rw-rw-r-- 1 zhxfei zhxfei 1032 4月   4 01:47 transfer_run.py      # transfer 启动入口
 
 ```
 ##### Agent
 ```shell
-(env) zhxfei@HP-ENVY:~/workspace/netease/EaseMonitor$ tree -L 2 agent
+zhxfei@HP-ENVY:~/PycharmProjects/EaseMonitorBak$ tree -L 2 -I "*.pyc|__pycache__"  agent
 agent
-├── agent_config.json   # agent 配置文件
-├── collector              # 一系列的Agent收集指标的模块
-│   ├── conn_status.py      # 网络连接相关
-│   ├── cpu_status.py       # cpu指标相关
-│   ├── data_collector_func.py  # 对上层暴露出的收集方法, 有了这个文件 增加收集指标只需要将对应的收集方法写到这个文件里面即可,主程序不需要修改
-│   ├── file_system.py      # 文件系统相关
+├── agent_config.json        # agent 配置文件
+├── agentd
+│   ├── agentd.py            # 主程序和主要的逻辑
+│   └── __init__.py
+├── collect
+│   ├── collector.py        # 数据收集模块
 │   ├── __init__.py
-│   ├── mem_status.py       # 内存指标相关
-│   ├── net_dev.py          # 网络接口相关
-│   └── system_status.py    # 系统相关,主要是load
-├── config                  
-│   ├── config_parser.py    # 配置文件的parse,主要是json 文件load到 dict
+│   └── sys_status_collect.py   # 数据收集的方法
+├── config
+│   ├── config_parser.py       # agent的配置parse
+│   ├── default_config.py       # agent的默认配置
 │   └── __init__.py
 ├── __init__.py
-├── monitor_agentd          
-│   ├── agentd.py           # 主要的逻辑
-│   └── __init__.py
-└── rpc                     # 上报指标的rpc client
+└── sender                  # 数据发送模块
+    ├── base_sender.py
     ├── __init__.py
-    └── send_rpc_client.py
+    └── rpc_client_sender.py
+
+4 directories, 13 files
 
 ```
 
@@ -50,78 +52,77 @@ usage()
     echo "Usage: agent_run.sh start|stop|restart|check|install|status"
 }
 ```
+
+**Agent图示**
+
+![Alt text](http://occwxjjdz.bkt.clouddn.com/agent_design%283%29.png "agent")
+
 ##### transfer
 ```shell
-(env) zhxfei@HP-ENVY:~/workspace/netease/EaseMonitor$ tree -L 2 transfer
+zhxfei@HP-ENVY:~/PycharmProjects/EaseMonitorBak$ tree -L 2 -I "*.pyc|__pycache__"  transfer
 transfer
-├── config      # 配置文件的parse,主要是json 文件load到 dict
-│   ├── config_parser.py
+├── config
+│   ├── config_parser.py         # 配置文件的parse
+│   ├── default_config.py        # 默认配置
 │   └── __init__.py
-├── conn_pool   # 后端的连接,目前就是一个redis连接
-│   ├── conn_pools.py
-│   └── __init__.py
-├── exceptions  # 简单的异常定义, 目前只是一个Queue满的exception
-│   ├── __init__.py
-│   └── queue_exception.py
-├── httpd       # common API ,用于处理http request
-│   ├── __init__.py
-│   └── recv_http_server.py
 ├── __init__.py
-├── routing      # 主要的逻辑:数据的路由, 定义了数据转发的逻辑
-│   ├── __init__.py
-│   └── router.py       
-├── rpc         # agent上报的rpc server,用于处理agent request
+├── receiver        # 数据接收组件
 │   ├── data_process.py
 │   ├── __init__.py
-│   └── recv_rpc_server.py
-├── sender      # 发送模块, 目前处于废弃中,在考虑是否可以去掉redis直接讲数据通过rpc的形式转发到storage
+│   ├── recv_http_server.py     # common API ,用于处理http request
+│   └── recv_rpc_server.py      #  agent上报的rpc server,用于处理agent request
+├── routing
 │   ├── __init__.py
+│   └── router.py       # 主要的逻辑:数据的路由, 定义了数据转发的逻辑
+├── sender          # 数据发送模块
+│   ├── __init__.py
+│   ├── redis_sender.py
 │   └── send_rpc_client.py
-├── transfer_config.json   # 配置文件
-├── transfer_queue
-│   ├── conn_queue.py   # queue层面的封装
-│   └── __init__.py
-└── utils       # 一些工具, 主要被用到的是对入口数据的规整,一些不符合格式的指标上报给去掉
-    ├── consistant_hash.py
+├── transfer_config.json    # 配置文件
+└── utils        # 一些工具, 主要被用到的是对入口数据的规整
     ├── data_formater.py
     └── __init__.py
 
-9 directories, 22 files
+5 directories, 16 files
+
+
 ```
 ##### storage
 ```shell
-(env) zhxfei@HP-ENVY:~/workspace/netease/EaseMonitor$ tree -L 2 storage
+zhxfei@HP-ENVY:~/PycharmProjects/EaseMonitorBak$ tree -L 2 -I "*.pyc|__pycache__"  storage
 storage
-├── config      # 配置文件的parse,主要是json 文件load到 dict
+├── config
 │   ├── config_parser.py
+│   ├── default_config.py
 │   └── __init__.py
-├── db
-│   ├── __init__.py
-│   └── mongo_clt.py        # 一个mongodb的client, 数据写入的逻辑
 ├── __init__.py
-├── puller                  # puller: 从redis队列中pull数据的逻辑
+├── puller              # 从redis中取数据
 │   ├── data_puller.py
 │   └── __init__.py
-├── storage_config.json     # 配置文件
+├── storage_config.json # 配置文件
 └── storager
     ├── __init__.py
-    └── storager.py         # 主要的逻辑, 代码的组织
+    └── storager.py     # 主要的逻辑
+
+3 directories, 9 files
+
 ```
 
 ##### API
 ```shell
-(env) zhxfei@HP-ENVY:~/workspace/netease/EaseMonitor$ tree -L 2 api
+zhxfei@HP-ENVY:~/PycharmProjects/EaseMonitorBak$ tree -L 2 -I "*.pyc|__pycache__"  api
 api
 ├── common
 │   ├── __init__.py
-│   └── mongo_clt.py        # 创建mongo的连接
+│   ├── mongo_clt.py         # 创建mongo的连接
+│   └── mongo_setting.py     # mongodb 的配置
 ├── __init__.py
-└── resources               # 资源
+└── resources
     ├── host_list.py        # 主机维度的资源, ip and hostname
-    ├── __init__.py     
-    ├── metric_list.py      # 指标的资源, 指标的种类
+    ├── __init__.py
+    ├── metric_list.py       # 指标的资源, 指标的种类
     └── monitor_data.py     # 具体监控指标的数据资源
 
-2 directories, 7 files
+2 directories, 8 files
 
 ```
