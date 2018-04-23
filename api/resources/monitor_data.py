@@ -55,7 +55,7 @@ class MonitorData(Resource):
     def options(self):
         res = jsonify({'ok': True})
         res.headers['Access-Control-Allow-Origin'] = '*'
-        res.headers['Access-Control-Allow-Methods'] = 'OPTIONS'
+        res.headers['Access-Control-Allow-Methods'] = 'DELETE'
         res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
         return res
 
@@ -94,5 +94,14 @@ class MonitorData(Resource):
                 'step': 1,
                 'tags': 1,
                 'counterType': 1
+            }).sort('timestamp', -1).limit(args.limit))
+
+    def delete(self):
+        args = self.post_parser.parse_args()
+        res = self.conn.delete_many({
+            "tags.hostname": args.host,
+            "timestamp": {
+                '$lte': args.s_time
             }
-            ).sort('timestamp', -1).limit(args.limit))
+        })
+        return jsonify(res.raw_result)
