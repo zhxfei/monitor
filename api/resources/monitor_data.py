@@ -104,4 +104,5 @@ class MonitorData(Resource):
                 '$lte': args.s_time
             }
         })
-        return jsonify(res.raw_result)
+        if res:
+            return jsonify(res.raw_result)

@@ -9,5 +9,5 @@ DEFAULT_DB_CONF = {
     "user": "easy_monitor",
     "password": os.getenv("MONGO_PASS", None),
     "name": "easy_monitor",
-    "document_name": "monitor_dev_test"
+    "document_name": "monitor_docker_test"
 }

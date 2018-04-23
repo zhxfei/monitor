@@ -1,5 +1,6 @@
 import json
 import argparse
+import logging
 
 from flask import Flask, make_response, jsonify
 from flask_restful import Api
