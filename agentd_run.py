@@ -10,7 +10,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--config',
                         metavar='CONF_FILE_PATH',
                         required=False,
-                        default='/home/zhxfei/PycharmProjects/EaseMonitorBak/agent/agent_config.json',
+                        default='./agent/agent_config.json',
                         dest='config_path',
                         action='store',
                         help='define Monitor Agent configuration file path')
@@ -20,9 +20,11 @@ if __name__ == '__main__':
         agent = MonitorAgent()
         agent.config_init(args.config_path)
         agent.serve_forever()
+
     except KeyboardInterrupt as e:
         logging.info("!!! Agent exit")
         sys.exit(0)
+
     except Exception as e:
         logging.critical('!!! unknown problem')
         logging.critical(e)

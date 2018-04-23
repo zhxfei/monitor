@@ -1,11 +1,11 @@
 """
  the module define mongodb client
 """
-
-# from gevent import monkey
 #
-# monkey.patch_all()
 import logging
+
+from gevent import monkey
+monkey.patch_all()
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure

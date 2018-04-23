@@ -24,7 +24,7 @@
       "retry_times": 2,
       "wait_time": 5,
       "sleep_time": 1,
-      "queue_suffix": "monitor_queue",
+      "queue_suffix": "monitor_queue_dev",
       "queue": {
         "type": "redis",
         "host": "localhost",

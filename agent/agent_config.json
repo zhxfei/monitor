@@ -10,7 +10,7 @@
     "collector": {
         "hostname": "",
         "ip": "",
-        "interval": 2,
+        "interval": 10,
         "ignore": [
         ]
     }

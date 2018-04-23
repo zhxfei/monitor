@@ -1,4 +1,3 @@
-import socket
 import time
 import logging
 from datetime import datetime
@@ -28,7 +27,7 @@ class Collector:
                     "timestamp": timestamps,
                     "step": self.interval,
                     "value": item_value,
-                    "counterType": 'GAUGE',
+                    "counterType": gen_counter_type(item_name),
                     "tags": {
                         "host_ip": self.ip,
                         "hostname": self.hostname
@@ -74,3 +73,10 @@ class PsUtilsCollector(Collector):
             the dict with __init__ params
         """
         return cls(**config)
+
+
+def gen_counter_type(metric_name):
+    if metric_name.startswith('net.dev'):
+        return 'COUNTER'
+    else:
+        return "GAUGE"

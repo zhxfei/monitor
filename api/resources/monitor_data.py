@@ -61,7 +61,7 @@ class MonitorData(Resource):
 
     def post(self):
         args = self.post_parser.parse_args()
-        if not args.limit and args.limit > 100:
+        if not args.limit:
             # asc return limit num items
             return list(self.conn.find({
                 "tags.hostname": args.host,
@@ -75,7 +75,9 @@ class MonitorData(Resource):
                 '_id': 0,
                 'timestamp': 1,
                 'step': 1,
-                'tags': 1}
+                'tags': 1,
+                'counterType': 1
+                }
             ).sort('timestamp', 1).limit(100000))
         else:
             # desc return limit num items
@@ -90,5 +92,7 @@ class MonitorData(Resource):
                 '_id': 0,
                 'timestamp': 1,
                 'step': 1,
-                'tags': 1}
+                'tags': 1,
+                'counterType': 1
+            }
             ).sort('timestamp', -1).limit(args.limit))

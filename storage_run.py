@@ -9,7 +9,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-c', '--config',
                         metavar='CONF_FILE_PATH',
-                        required=True,
+                        required=False,
+                        default='./storage/storage_config.json',
                         dest='config_path',
                         action='store',
                         help='define Monitor transfer configuration file path')
@@ -18,14 +19,13 @@ if __name__ == '__main__':
     try:
         data_store = DataStorage()
         data_store.config_init(args.config_path)
-        data_store.config_init('/home/zhxfei/PycharmProjects/EaseMonitorBak/storage/storage_config.json')
         data_store.storage_forever()
 
     except KeyboardInterrupt as e:
         logging.info("!!! Storage exit")
         sys.exit(0)
+
     except Exception as e:
         logging.critical('!!! unknown problem')
         logging.critical(e)
         sys.exit(4)
-

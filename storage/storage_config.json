@@ -5,7 +5,7 @@
   "concurrency_num": 1,
   "batch": 98,
   "puller": {
-    "queue_suffix": "monitor_queue",
+    "queue_suffix": "monitor_queue_dev",
     "backend_type": "store",
     "connection_params": {
         "type": "redis",
@@ -20,6 +20,6 @@
     "port": 30000,
     "user": "easy_monitor",
     "name": "easy_monitor",
-    "document_name": "monitor_dev_test2"
+    "document_name": "monitor_dev_test"
   }
 }
