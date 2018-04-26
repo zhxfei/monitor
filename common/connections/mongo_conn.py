@@ -38,7 +38,7 @@ class MONGOClient:
     def status_check(self):
         """check mongodb connect succeed"""
         try:
-            # The ismaster command is cheap and does not require auth.
+            # The is_master command is cheap and does not require auth.
             self.connection.admin.command('ismaster')
         except ConnectionFailure:
             return False

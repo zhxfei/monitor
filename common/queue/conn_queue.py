@@ -93,6 +93,9 @@ class RedisQueue(BaseQueue):
                 # if redis list length > 0 , rpop data is a tuple (pop_queue_name, pop_res_data)
                 data_lst.append(literal_eval(data[1].decode('utf-8')))
                 count += 1
+            elif data is not None:
+                data_lst.append(literal_eval(data.decode('utf-8')))
+                count += 1
             else:
                 # if redis list length = 0 or not exists, rpop data is None
                 break
