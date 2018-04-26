@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from flask import jsonify
+from flask import jsonify, abort
 from api.common.mongo_clt import create_conn
 
 
@@ -53,10 +53,7 @@ class MonitorData(Resource):
         )
 
     def options(self):
-        res = jsonify({'ok': True})
-        res.headers['Access-Control-Allow-Origin'] = '*'
-        res.headers['Access-Control-Allow-Methods'] = 'DELETE'
-        res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+        res = {'ok': True}
         return res
 
     def post(self):
@@ -105,4 +102,6 @@ class MonitorData(Resource):
             }
         })
         if res:
-            return jsonify(res.raw_result)
+            return res.raw_result
+        else:
+            abort(405)

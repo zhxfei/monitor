@@ -1,13 +1,18 @@
+from gevent import monkey
+
+monkey.patch_all()
+
 import json
 import argparse
-import logging
 
 from flask import Flask, make_response, jsonify
 from flask_restful import Api
+from gevent.pywsgi import WSGIServer
 
 from api.resources.monitor_data import MonitorData
 from api.resources.host_list import HostList, IpList
 from api.resources.metric_list import MetricList
+from api.resources.user import User, UserList
 
 app = Flask(__name__)
 
@@ -17,6 +22,8 @@ a.add_resource(MonitorData, '/monitor/v1/items')
 a.add_resource(HostList, '/monitor/v1/hosts')
 a.add_resource(MetricList, '/monitor/v1/metrics')
 a.add_resource(IpList, '/monitor/v1/ips')
+a.add_resource(User, '/monitor/v1/user/<string:user_id>')
+a.add_resource(UserList, '/monitor/v1/users')
 
 
 @app.errorhandler(404)
@@ -27,8 +34,9 @@ def not_found(error):
 @a.representation('application/json')
 def output_json(data, code, headers=None):
     resp = make_response(json.dumps(data), code)
-    resp.headers.extend({
-        'Access-Control-Allow-Origin': '*'
+    resp.headers.extend(headers or {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTION,DELETE'
     })
     return resp
 
@@ -51,4 +59,6 @@ if __name__ == '__main__':
                         help='define Monitor API server host listening')
 
     args = parser.parse_args()
-    app.run(args.host, args.port)
+    server = WSGIServer((args.host, args.port), app)
+    server.serve_forever()
+    app.run(args.host, args.port, debug=True)
