@@ -131,7 +131,7 @@ install_package()
 check_os()
 {
     cat /proc/version | grep -iE 'debian|ubuntu' &> /dev/null && return 1
-    cat /proc/version | grep -iE 'redhat|centos' &> /dev/null && return 2
+    cat /proc/version | grep -iE 'redhat|centos|red hat' &> /dev/null && return 2
     echo "[ERROR] Unsupport os release"
     exit 8
 }
