@@ -2,15 +2,21 @@ from datetime import datetime
 
 from flask_restful.inputs import boolean
 from flask_restful import Resource, reqparse
-from flask import jsonify, abort
+from flask import jsonify, abort, current_app
 from bson.objectid import ObjectId
 
-from api.common.mongo_clt import create_user_conn
+from api import app
+from api.security import auth
+
 
 
 class UserList(Resource):
+    method_decorators = [auth.login_required]
+
     def __init__(self):
-        self.conn = create_user_conn()
+        with app.app_context():
+            self.document = current_app.mongo_conn.document_new('monitor_user')
+
         self.post_parser = reqparse.RequestParser()
         self.post_parser.add_argument(
             'username',
@@ -84,7 +90,7 @@ class UserList(Resource):
 
     def get(self):
         res = []
-        user_lst = self.conn.find({}, {'password': 0, 'login_name': 0})
+        user_lst = self.document.find({}, {'password': 0, 'login_name': 0})
         for user in user_lst:
             user_id = str(user.pop('_id'))
             user['user_id'] = user_id
@@ -92,15 +98,15 @@ class UserList(Resource):
         return res
 
     def options(self):
-        return {'ok': True}
+        return {'code': 1}
 
     def post(self):
         args = self.post_parser.parse_args()
-        res = self.conn.find_one({
+        res = self.document.find_one({
             'login_name': args.login_name
         })
         if res is None:
-            res = self.conn.insert_one({
+            res = self.document.insert_one({
                 'username': args.username,
                 'login_name': args.login_name,
                 'password': args.password,
@@ -113,12 +119,15 @@ class UserList(Resource):
             return {'_id': str(res.inserted_id)}
         else:
             # user exists
-            return {'msg': 'user login name exists'}
+            abort(400, "login name {} has exist".format(args.login_name))
 
 
 class User(Resource):
+    method_decorators = [auth.login_required]
+
     def __init__(self):
-        self.conn = create_user_conn()
+        with app.app_context():
+            self.document = current_app.mongo_conn.document_new('monitor_user')
 
         self.put_parser = reqparse.RequestParser()
         self.put_parser.add_argument(
@@ -176,7 +185,7 @@ class User(Resource):
 
     def get(self, user_id):
         if user_id:
-            res = self.conn.find_one({
+            res = self.document.find_one({
                 '_id': ObjectId(user_id)
             }, {'_id': 0, 'password': 0, 'login_name': 0})
         else:
@@ -188,7 +197,7 @@ class User(Resource):
             abort(404)
 
     def delete(self, user_id):
-        res = self.conn.delete_one({'_id': ObjectId(user_id)})
+        res = self.document.delete_one({'_id': ObjectId(user_id)})
         if res.raw_result['n'] > 0:
             res = {'msg': 'User delete succeed'}
         else:
@@ -201,7 +210,7 @@ class User(Resource):
 
     def put(self, user_id):
         args = self.put_parser.parse_args()
-        res = self.conn.find_one_and_update(
+        res = self.document.find_one_and_update(
             {
                 '_id': ObjectId(user_id),
             },

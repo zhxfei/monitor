@@ -46,12 +46,23 @@ class DataStorage:
     def _db_conn_init(self):
         """ setup the database connection"""
         self.db_clt = self.config.get_db_from_config()
-        logging.info('db connection init succeed')
+        if self.db_clt is None:
+            logging.error('DB connection init failed')
+            raise SystemExit(4)
+        else:
+            logging.error('DB connection init failed')
 
     def _puller_init(self):
         """ setup the puller """
-        self.puller = self.config.get_puller_from_config()
-        logging.info('Puller init succeed')
+        try:
+            self.puller = self.config.get_puller_from_config()
+        except ValueError as error_info:
+            logging.error('Puller init failed: %s' % error_info)
+            raise SystemExit(5)
+        except Exception as error_info:
+            raise error_info
+        else:
+            logging.info('Puller init succeed')
 
     def _pull_and_storage(self, job_id):
         """

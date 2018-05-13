@@ -18,6 +18,7 @@ class StorageConfigParser(ConfigParser):
             db_params.update(self.get_dict('database'))
         except ValueError as error_info:
             sys.stderr.write(error_info)
+            raise SystemExit(2)
         else:
             self.var_dict['puller'] = puller_params
             self.var_dict['database'] = db_params

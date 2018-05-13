@@ -28,4 +28,4 @@ if __name__ == '__main__':
     except Exception as e:
         logging.critical('!!! unknown problem')
         logging.critical(e)
-        sys.exit(4)
+        raise SystemExit(1)

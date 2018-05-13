@@ -1,11 +1,17 @@
 from flask_restful import Resource, reqparse
-from flask import jsonify, abort
-from api.common.mongo_clt import create_conn
+from flask import current_app, abort
+
+from api import app
+from api.security import auth
 
 
 class MonitorData(Resource):
+    method_decorators = [auth.login_required]
+
     def __init__(self):
-        self.conn = create_conn()
+        with app.app_context():
+            self.document = current_app.mongo_conn.document
+
         self.post_parser = reqparse.RequestParser()
         self.post_parser.add_argument(
             'endpoint',
@@ -60,7 +66,7 @@ class MonitorData(Resource):
         args = self.post_parser.parse_args()
         if not args.limit:
             # asc return limit num items
-            return list(self.conn.find({
+            return list(self.document.find({
                 "tags.hostname": args.host,
                 "metric": args.item,
                 "timestamp": {
@@ -74,11 +80,11 @@ class MonitorData(Resource):
                 'step': 1,
                 'tags': 1,
                 'counterType': 1
-                }
+            }
             ).sort('timestamp', 1).limit(100000))
         else:
             # desc return limit num items
-            return list(self.conn.find({
+            return list(self.document.find({
                 "tags.hostname": args.host,
                 "metric": args.item,
                 "timestamp": {
@@ -95,7 +101,7 @@ class MonitorData(Resource):
 
     def delete(self):
         args = self.post_parser.parse_args()
-        res = self.conn.delete_many({
+        res = self.document.delete_many({
             "tags.hostname": args.host,
             "timestamp": {
                 '$lte': args.s_time
