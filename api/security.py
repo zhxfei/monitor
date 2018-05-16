@@ -10,7 +10,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
 
 from . import app
 
-serializer = Serializer(app.config['SECRET_KEY'], expires_in=600)
+serializer = Serializer(app.config['SECRET_KEY'], expires_in=6000)
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth(scheme='token')

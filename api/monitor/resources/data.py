@@ -1,5 +1,6 @@
 from flask_restful import Resource, reqparse
 from flask import current_app, abort
+from pymongo import ASCENDING, DESCENDING
 
 from api import app
 from api.security import auth
@@ -64,6 +65,7 @@ class MonitorData(Resource):
 
     def post(self):
         args = self.post_parser.parse_args()
+        # todo: tags and counterType: 0 and add external mark for tag and counterType
         if not args.limit:
             # asc return limit num items
             return list(self.document.find({
@@ -81,13 +83,14 @@ class MonitorData(Resource):
                 'tags': 1,
                 'counterType': 1
             }
-            ).sort('timestamp', 1).limit(100000))
+            ).sort('timestamp', ASCENDING).limit(60 * 24 * 7))
         else:
             # desc return limit num items
             return list(self.document.find({
                 "tags.hostname": args.host,
                 "metric": args.item,
                 "timestamp": {
+                    '$gte': args.s_time,
                     '$lte': args.e_time
                 }
             }, {
@@ -97,7 +100,7 @@ class MonitorData(Resource):
                 'step': 1,
                 'tags': 1,
                 'counterType': 1
-            }).sort('timestamp', -1).limit(args.limit))
+            }).sort('timestamp', DESCENDING).limit(args.limit))
 
     def delete(self):
         args = self.post_parser.parse_args()

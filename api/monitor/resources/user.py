@@ -9,7 +9,6 @@ from api import app
 from api.security import auth
 
 
-
 class UserList(Resource):
     method_decorators = [auth.login_required]
 
