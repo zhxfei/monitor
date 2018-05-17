@@ -65,7 +65,7 @@ class MonitorData(Resource):
 
     def post(self):
         args = self.post_parser.parse_args()
-        # todo: tags and counterType: 0 and add external mark for tag and counterType
+        # todo: tags and counterType should be only an external mark
         if not args.limit:
             # asc return limit num items
             return list(self.document.find({
@@ -82,8 +82,7 @@ class MonitorData(Resource):
                 'step': 1,
                 'tags': 1,
                 'counterType': 1
-            }
-            ).sort('timestamp', ASCENDING).limit(60 * 24 * 7))
+            }).sort('timestamp', ASCENDING).limit(60 * 24 * 7))
         else:
             # desc return limit num items
             return list(self.document.find({

@@ -1,8 +1,7 @@
 from datetime import datetime
 
-from flask import g, request
 from flask_restful import Resource, reqparse, abort
-from flask import jsonify, current_app
+from flask import jsonify, current_app, g, request
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
