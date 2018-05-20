@@ -16,7 +16,7 @@ class PolicyList(Resource):
         with app.app_context():
             self.strategy_document = current_app.mongo_conn.document_new('monitor_strategy')
             self.alerter_document = current_app.mongo_conn.document_new('monitor_alert')
-            self.document = current_app.mongo_conn.document_new('monitor_strategy_alert')
+            self.document = current_app.mongo_conn.document_new('monitor_policy')
 
         self.post_parser = reqparse.RequestParser()
 
@@ -81,6 +81,7 @@ class PolicyList(Resource):
             if res is None:
                 if self.exists_check(args.strategy_id_lst, self.strategy_document) \
                         and self.exists_check(args.alerter_id_lst, self.alerter_document):
+                    # add new policy
                     res = self.document.insert_one({
                         'name': args.name,
                         'strategy_id_lst': args.strategy_id_lst,
@@ -90,6 +91,8 @@ class PolicyList(Resource):
                         'creator': g.user['login_name'],
                         'update_time': int(datetime.now().timestamp())
                     })
+
+                    # add new judge items
                     return {'_id': str(res.inserted_id)}
                 else:
                     abort(400, message='strategy id or alert id is not exists')
@@ -115,7 +118,7 @@ class Policy(Resource):
 
     def __init__(self):
         with app.app_context():
-            self.document = current_app.mongo_conn.document_new('monitor_strategy_alert')
+            self.document = current_app.mongo_conn.document_new('monitor_policy')
 
         self.put_parser = reqparse.RequestParser()
         self.put_parser.add_argument(

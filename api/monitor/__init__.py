@@ -7,6 +7,7 @@ def register_url(api_rest):
     from api.monitor.resources.alerter import Alert, Alerts
     from api.monitor.resources.policy import Policy, PolicyList
     from api.monitor.resources.alarm import Alarm, AlarmList
+    from api.monitor.resources.judge_item import JudgeItemList
 
     api_rest.add_resource(MonitorData, '/monitor/v1/items')
     api_rest.add_resource(HostList, '/monitor/v1/hosts')
@@ -22,3 +23,4 @@ def register_url(api_rest):
     api_rest.add_resource(PolicyList, '/monitor/v1/policies')
     api_rest.add_resource(Alarm, '/monitor/v1/alarm/<string:alarm_id>')
     api_rest.add_resource(AlarmList, '/monitor/v1/alarms')
+    api_rest.add_resource(JudgeItemList, '/monitor/v1/judge_items')
