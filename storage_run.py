@@ -1,10 +1,14 @@
-import argparse
-import logging
-import sys
-
-from storage.storager.storager import DataStorage
-
 if __name__ == '__main__':
+    from gevent import monkey
+
+    monkey.patch_all()
+
+    import argparse
+    import logging
+    import sys
+
+    from storage.storager.storager import DataStorage
+
     description = '''Monitor storage design for data storage, insert into Mongodb'''
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-c', '--config',

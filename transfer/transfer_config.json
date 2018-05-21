@@ -4,7 +4,7 @@
   "router": {
     "max_queue_length": 100000, 
     "concurrency_num": 1,
-    "backend_nodes": ["store"]
+    "backend_nodes": ["watcher"]
   },
   "receiver": {
     "http": {
@@ -19,17 +19,17 @@
     }
   },
   "sender": {
-    "store": {
+   "watcher": {
       "max_queue_len": 100000,
       "retry_times": 2,
       "wait_time": 5,
       "sleep_time": 1,
-      "queue_suffix": "monitor_queue_dev",
+      "queue_suffix": "monitor_queue_watcher",
       "queue": {
         "type": "redis",
         "host": "localhost",
         "port": 6379,
-        "db": 0
+        "db": 1
       }
     }
   }

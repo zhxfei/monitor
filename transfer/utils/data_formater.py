@@ -4,7 +4,7 @@ import logging
 STANDARD_FORMAT = (
     'tags',
     'value',
-    'metric',
+    'metrics',
     'counterType',
     'timestamp',
     'step'

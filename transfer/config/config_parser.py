@@ -32,7 +32,7 @@ class TransferConfigParser(ConfigParser):
     def router_conf_parse(self):
         router_default_conf = default_config.DEFAULT_ROUTER_CONF.copy()
         router_conf = self.get_dict('router')
-        router_conf.update(router_default_conf)
+        router_default_conf.update(router_conf)
         self.var_dict['router'] = router_default_conf
 
     def receiver_conf_parse(self):

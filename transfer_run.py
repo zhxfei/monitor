@@ -1,10 +1,13 @@
-import argparse
-import logging
-import sys
-
-from transfer.routing.router import Router
-
 if __name__ == '__main__':
+    from gevent import monkey
+
+    monkey.patch_all()
+
+    import argparse
+    import logging
+    import sys
+
+    from transfer.routing.router import Router
     description = '''Monitor transfer design for data routing'''
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-c', '--config',

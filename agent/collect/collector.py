@@ -23,7 +23,7 @@ class Collector:
         for item_name, item_value in data.items():
             if item_name not in self.ignore:
                 item_dict = {
-                    "metric": item_name,
+                    "metrics": item_name,
                     "timestamp": timestamps,
                     "step": self.interval,
                     "value": item_value,
