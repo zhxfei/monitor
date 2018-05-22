@@ -1,7 +1,7 @@
 import heapq
 import logging
 from datetime import datetime
-
+from gevent.lock import BoundedSemaphore
 from .utils import gen_key
 
 CACHE_LEN = 11
@@ -27,6 +27,7 @@ class MonitorItem:
 class MonitorItemHeapQueue:
     def __init__(self):
         self.item_lst = []
+        self._lock = BoundedSemaphore(1)
 
     def insert_item(self, item_instance):
         """
@@ -34,6 +35,7 @@ class MonitorItemHeapQueue:
         :param item_instance: MonitorItem
         :return:
         """
+
         if len(self.item_lst) == CACHE_LEN:
             heapq.heappushpop(self.item_lst, (item_instance.timestamp, item_instance))
         else:
@@ -70,7 +72,7 @@ class MonitorItemCacheMap:
         _h = self.cache_map[key]
 
         if len(_h.item_lst) < int(n):
-            raise ValueError('MonitorItemHeapQueue has no su much cache')
+            logging.error('MonitorItemHeapQueue has no su much cache')
         else:
             return _h.get_max_n(n)
 

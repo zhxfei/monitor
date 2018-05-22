@@ -1,5 +1,6 @@
-from gevent import monkey
-monkey.patch_all()
+# from gevent import monkey
+#
+# monkey.patch_all()
 
 import logging
 
@@ -17,7 +18,7 @@ class UrlFetcher:
     """
     request_params = {
         'auth': HTTPBasicAuth(*DEFAULT_AUTH),
-        # 'timeout': 3
+        'timeout': 3
     }
 
     def __init__(self, url, retry_time=3, method='get', data=None):
@@ -33,7 +34,7 @@ class UrlFetcher:
     def fetch(self, url=None):
         """
          fetch data from instance url; try some time and get data from url
-        :return: requests.Response
+        :return: requests.Response or None
         """
         count = 0
         result = None

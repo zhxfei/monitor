@@ -1,19 +1,23 @@
 import logging
-from gevent import time
 
-from watcher.model import JudgeItemFetcher, gen_key, DataPuller, MonitorItemCacheMap
-from watcher.config.default_setting import DEFAULT_PULLER_CONF, API_URL
+import gevent
+from gevent.queue import Full
 
-JUDGE_URL = API_URL + "/judge_items"
+from watcher.net import DataPuller
+from watcher.model import JudgeItemFetcher, gen_key, MonitorItemCacheMap
+from watcher.config.default_setting import DEFAULT_PULLER_CONF, JUDGE_URL
 
 
 class MonitorItemHelper:
-    def __init__(self):
+    def __init__(self, worker_queue=None):
         self.data_puller = DataPuller.from_config(DEFAULT_PULLER_CONF)
         self.batch = 106
-        self.thread_sleep_time = 1
+        self._thread_sleep_time = 1
         self.counter = 0
         self.data_cache_map = MonitorItemCacheMap()
+
+        # self._lock = lock
+        self.worker_queue = worker_queue
 
     def pull_monitor_item(self, judge_item_pool):
         """
@@ -28,38 +32,37 @@ class MonitorItemHelper:
             self._data_filter_and_cache(data_item_lst, judge_item_pool)
         if queue_is_empty:
             logging.debug("Queue is empty")
-            time.sleep(self.thread_sleep_time)
+            gevent.sleep(self._thread_sleep_time)
 
     def _data_filter_and_cache(self, data_item_lst, judge_item_pool):
         """
-        filter data from puller and push in queue logic
+        the logic which filter data from puller and push in cache
         """
         old_counter = self.counter
 
-        for item in data_item_lst:
-            key = gen_key(item)
+        for item_data in data_item_lst:
+            key = gen_key(item_data)
             if key in judge_item_pool:
                 self.counter += 1
-                print(True)
-                self.data_cache_map.push(item)
-                import time as time_
-                print("COST: ", time_.time()-item.get('timestamp'))
+                self.data_cache_map.push(item_data)
+                try:
+                    self.worker_queue.put_nowait(
+                        (key, item_data.get('value'), item_data.get('timestamp'))
+                    )
+                except Full:
+                    logging.error("judge worker queue is full the judge task will be lost")
 
         if old_counter == self.counter:
-            # may judge police is null or judge policy fetch failed
-            logging.info("no judge item in item judge pool, counter: " % self.counter)
-            time.sleep(1)
-
-        # for item in data_item_lst:
-        #     self.data_cache_map.push(item)
-        #
-        # print(self.data_cache_map.cache_map)
-        # print("cache queue length: {}".format(len(self.data_cache_map.cache_map)))
+            # may api server set no judge police or judge policy fetch failed
+            logging.info("no judge item in item judge pool, counter: %d" % self.counter)
+            gevent.sleep(1)
+        else:
+            gevent.sleep(0)
 
 
 class JudgeItemHelper:
-    def __init__(self):
-        self.judge_item_fetcher = JudgeItemFetcher(JUDGE_URL)
+    def __init__(self, url=JUDGE_URL):
+        self.judge_item_fetcher = JudgeItemFetcher(url)
         self.judge_item_pool = dict()
 
     def update_pool(self):

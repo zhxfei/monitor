@@ -1,36 +1,49 @@
-# from watcher.strategy import policy_cache, strategy_cache
-# from pprint import pprint
-# from watcher.fetcher.fetch import Fetcher
-# from watcher.config.default_setting import API_URL
-# from watcher.strategy.policy import Policy
-#
-# import time
-# import threading
-#
-#
-# def cache_print():
-#     while True:
-#         pprint(policy_cache)
-#         pprint(strategy_cache)
-#         time.sleep(2)
-#         print('-' * 20)
-#
-#
-# def change():
-#     fetcher = Fetcher(API_URL + '/policies')
-#     res = fetcher.fetch()
-#
-#     if res.status_code == 200:
-#         for data in res.json():
-#             Policy.from_dict(data)
-#
-#
-# if __name__ == '__main__':
-#     t1 = threading.Thread(target=change)
-#     t2 = threading.Thread(target=cache_print)
-#
-#     t1.start()
-#     t2.start()
-#
-#     t1.join()
-#     t2.join()
+from gevent import monkey
+
+monkey.patch_all()
+
+import time
+import gevent
+from gevent.queue import Queue
+import requests
+
+q = Queue()
+
+
+def producer():
+    for x in range(10000000):
+        # print("put {} in queue".format(x))
+        q.put_nowait(x)
+
+        if x % 5 == 0:
+            gevent.sleep(0)
+
+
+def consumer():
+    for _ in range(10000000):
+        # print("pop {} out queue".format(_))
+        x = q.get_nowait()
+        # print(x)
+
+        if x % 5 == 0:
+            gevent.sleep(0)
+
+
+def crawl():
+    for _ in range(20):
+        t1 = time.time()
+        url = "http://www.baidu.com"
+        print("crawl {}".format(_))
+        res = requests.get(url)
+        print(time.time() - t1)
+        print(res)
+        gevent.sleep(1)
+        print(time.time() - t1)
+
+
+job_lst = list()
+job_lst.append(gevent.spawn(crawl))
+job_lst.append(gevent.spawn(producer))
+job_lst.append(gevent.spawn(consumer))
+
+gevent.joinall(job_lst)

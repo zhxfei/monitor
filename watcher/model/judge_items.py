@@ -1,11 +1,10 @@
-from gevent import time
-
+from watcher.net import UrlFetcher
 from .utils import gen_key
-from .http_client import UrlFetcher
 
 
 class JudgeItem:
     judge_item_cache = dict()
+    update_time_cache = dict()
 
     def __init__(self, **kwargs):
         self.metrics = kwargs.get('metrics')
@@ -26,21 +25,23 @@ class JudgeItem:
     @classmethod
     def from_cache(cls, params):
         """
-
+            return the judge item instance
         :param params:
         :return:
         """
         key = gen_key(params)
-
-        if key not in cls.judge_item_cache:
-            instance = cls(**params)
-            cls.judge_item_cache[key] = instance
-
+        update_time = params.get('update_time')
+        if key in cls.judge_item_cache and cls.update_time_cache[key] == update_time:
+            # if the judge_item is in cache and has no update
+            return cls.judge_item_cache[key]
+        # judge item should new or update the old
+        instance = cls(**params)
+        cls.judge_item_cache[key] = instance
+        cls.update_time_cache[key] = update_time
         return cls.judge_item_cache[key]
 
 
 class JudgeItemFetcher(UrlFetcher):
-
     def get_recent(self):
         """
         get policy recent instance from api server
