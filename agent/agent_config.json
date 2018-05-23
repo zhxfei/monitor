@@ -1,5 +1,5 @@
 {
-    "debug": true,
+    "debug": false,
     "logfile": "",
     "transfer": {
         "host": "localhost",
@@ -10,7 +10,7 @@
     "collector": {
         "hostname": "newbie-unknown85824.i.nease.net",
         "ip": "10.83.3.48",
-        "interval": 10,
+        "interval": 5,
         "ignore": [
         ]
     }

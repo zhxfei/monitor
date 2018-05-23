@@ -1,18 +1,26 @@
-
 if __name__ == '__main__':
-    import gevent
-
     from gevent import monkey
+
     monkey.patch_all()
 
     import logging
-    logging.basicConfig()
+
+    import gevent
+
+    logging.basicConfig(
+        # filename=self.config.var_dict.get('logfile') or None,
+        level=logging.INFO,
+        format='%(levelname)s:%(asctime)s:%(message)s'
+    )
+    logging.info('watcher log init succeed...')
 
     from watcher.judger import Judge
+
     job_lst = []
     j = Judge()
-    job_lst.append(gevent.spawn(j.pull_monitor_item))
+
     job_lst.append(gevent.spawn(j.sync_judge_item))
-    job_lst.append(gevent.spawn(j.judge_loop))
+    job_lst.append(gevent.spawn_later(0.5, j.pull_monitor_item))
+    job_lst.append(gevent.spawn_later(0.5, j.judge_loop))
 
     gevent.joinall(job_lst)

@@ -58,21 +58,23 @@ class RedisQueue(BaseQueue):
         conn_instance = RedisConnPool.from_config(self.connection_params)
         self.queue = conn_instance.get_conn()
 
-    def put(self, data):
+    def put(self, data, queue_name=None):
         """ push data in redis list, by left push"""
         if len(self) < self.max_queue_len:
-            res = self.queue.lpush(self.queue_name, data)
+            res = self.queue.lpush(queue_name or self.queue_name, data)
             return res
 
         raise QueueFullException
 
-    def get(self, batch, timeout=1):
+    def get(self, batch, timeout=1, queue_name=None):
         """
         pop data from queue in redis list, by right pop
         :param batch:   int
                 data numbers queue pop once
         :param timeout: int
                 when queue pop data, the operation will block and wait some time for data
+        :param queue_name: str
+                Specify the queue name
         :return:    tuple
             True, data_lst is mean the redis queue is empty
                 if data_lst is not None, and the data_lst is the final data in the queue
@@ -86,7 +88,7 @@ class RedisQueue(BaseQueue):
             return True, None
 
         while count < batch:
-            data = self.queue.brpop(self.queue_name, timeout=timeout)
+            data = self.queue.brpop(queue_name or self.queue_name, timeout=timeout)
 
             if timeout is not 0 and isinstance(data, tuple):
                 # redis pop data is a byte type

@@ -26,7 +26,7 @@ class MonitorItem:
 
 class MonitorItemHeapQueue:
     def __init__(self):
-        self.item_lst = []
+        self._item_lst = []
         self._lock = BoundedSemaphore(1)
 
     def insert_item(self, item_instance):
@@ -35,15 +35,19 @@ class MonitorItemHeapQueue:
         :param item_instance: MonitorItem
         :return:
         """
-
-        if len(self.item_lst) == CACHE_LEN:
-            heapq.heappushpop(self.item_lst, (item_instance.timestamp, item_instance))
-        else:
-            heapq.heappush(self.item_lst, (item_instance.timestamp, item_instance))
+        with self._lock:
+            if len(self._item_lst) == CACHE_LEN:
+                heapq.heappushpop(self._item_lst, (item_instance.timestamp, item_instance))
+            else:
+                heapq.heappush(self._item_lst, (item_instance.timestamp, item_instance))
 
     def get_max_n(self, n):
-        res = heapq.nlargest(n, self.item_lst)
-        return res
+        with self._lock:
+            res = heapq.nlargest(n, self._item_lst)
+            return res
+
+    def __len__(self):
+        return len(self._item_lst)
 
 
 class MonitorItemCacheMap:
@@ -71,8 +75,8 @@ class MonitorItemCacheMap:
             return None
         _h = self.cache_map[key]
 
-        if len(_h.item_lst) < int(n):
-            logging.error('MonitorItemHeapQueue has no su much cache')
+        if len(_h) < int(n):
+            logging.warning("MonitorItemHeapQueue don't has su much cache...judge should be wait")
         else:
             return _h.get_max_n(n)
 

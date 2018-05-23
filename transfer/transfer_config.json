@@ -1,5 +1,5 @@
 {
-  "debug": true,
+  "debug": false,
   "logfile": "",
   "router": {
     "max_queue_length": 100000, 

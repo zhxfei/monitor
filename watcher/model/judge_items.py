@@ -1,5 +1,7 @@
-from watcher.net import UrlFetcher
+import logging
+
 from .utils import gen_key
+from watcher.net import UrlFetcher
 
 
 class JudgeItem:
@@ -13,7 +15,7 @@ class JudgeItem:
         self.monitor_id = kwargs.get('monitor_id')
 
     def __str__(self):
-        return "Judge Item Structure for %s" % self.metrics
+        return "Judge Item for %s, condition: %s" % (self.metrics, self.condition)
 
     def __hash__(self):
         _key = gen_key({
@@ -34,10 +36,11 @@ class JudgeItem:
         if key in cls.judge_item_cache and cls.update_time_cache[key] == update_time:
             # if the judge_item is in cache and has no update
             return cls.judge_item_cache[key]
-        # judge item should new or update the old
+        # judge item should new or update and replace the old instance
         instance = cls(**params)
         cls.judge_item_cache[key] = instance
         cls.update_time_cache[key] = update_time
+        logging.info("judge item getting new: %s" % instance)
         return cls.judge_item_cache[key]
 
 

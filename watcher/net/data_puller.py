@@ -6,10 +6,10 @@ from common.queue.conn_queue import RedisQueue
 
 class DataPuller(RedisQueue):
     """
-        pull data from redis queue
+        push and pull data from redis list
     """
 
-    def push_judge_msg(self, msg, queue_name):
+    def push_data(self, msg, queue_name):
         self.put(msg, queue_name=queue_name)
 
     def pull_data(self, batch):

@@ -35,7 +35,7 @@ class Judge:
                 gevent.sleep(JUDGE_ITEM_SYNC_INTERVAL)
 
     def _get_recent_monitor_item(self, key, n):
-        return self.monitor_data_helper.data_cache_map.get_recent_data(key, n)
+        return self.monitor_data_helper.get_data_from_cache(key, n)
 
     def _get_recent_data(self, key, condition):
         """
@@ -51,16 +51,13 @@ class Judge:
         if recent_data is not None:
             return [data[1] for data in recent_data]
 
-    def _get_judge_item(self):
-        return self.judge_helper.judge_item_pool
-
     def judge_loop(self):
         while True:
             try:
                 key, *msg = self._worker_queue.get_nowait()
 
                 # judge item won't be none
-                judge_item = self.judge_helper.judge_item_pool.get(key)
+                judge_item = self.judge_helper.get_item_from_pool(key)
 
                 # _judge_main function could contains blocked function call
                 # so should create a new greenlet
@@ -69,12 +66,12 @@ class Judge:
                 gevent.sleep(0)
 
             except Empty:
-                logging.debug("judge worker queue is Empty")
                 gevent.sleep(0.1)
 
     def _judge_handler(self, msg, judge_item):
         message = self._build_judge_msg(msg, judge_item)
-        self.monitor_data_helper.data_puller.push_judge_msg(message, JUDGE_QUEUE_NAME)
+        logging.debug("judge handle msg: %s" % str(message))
+        self.monitor_data_helper.push_judge_msg(message, JUDGE_QUEUE_NAME)
 
     def _judge_main(self, key, judge_item, msg):
         try:
@@ -85,7 +82,7 @@ class Judge:
         except ValueError as error_:
             logging.error(error_)
         except Exception as error_:
-            logging.error("Unknown error type", error_)
+            logging.error("Unknown error type", str(error_))
         finally:
             gevent.sleep(0)
 
@@ -94,6 +91,7 @@ class Judge:
         if _func is not None:
             recent_items = self._get_recent_data(key, condition)
             if recent_items:
+                # print(recent_items, condition)
                 return _func(condition, recent_items)
         else:
             logging.error("unsupported condition setting")

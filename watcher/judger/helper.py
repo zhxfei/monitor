@@ -19,6 +19,9 @@ class MonitorItemHelper:
         # self._lock = lock
         self.worker_queue = worker_queue
 
+    def push_judge_msg(self, msg, queue_name):
+        self.data_puller.push_data(msg, queue_name)
+
     def pull_monitor_item(self, judge_item_pool):
         """
         pull monitor data from redis and filter out item that watcher don't care about
@@ -31,7 +34,7 @@ class MonitorItemHelper:
         if data_item_lst:
             self._data_filter_and_cache(data_item_lst, judge_item_pool)
         if queue_is_empty:
-            logging.debug("Queue is empty")
+            logging.debug("monitor item puller: redis queue is empty")
             gevent.sleep(self._thread_sleep_time)
 
     def _data_filter_and_cache(self, data_item_lst, judge_item_pool):
@@ -57,7 +60,10 @@ class MonitorItemHelper:
             logging.info("no judge item in item judge pool, counter: %d" % self.counter)
             gevent.sleep(1)
         else:
-            gevent.sleep(0)
+            gevent.sleep(1)
+
+    def get_data_from_cache(self, key, n):
+        return self.data_cache_map.get_recent_data(key, n)
 
 
 class JudgeItemHelper:
@@ -73,10 +79,12 @@ class JudgeItemHelper:
         data = self.judge_item_fetcher.get_recent()
         if isinstance(data, list):
             self.judge_item_pool = {hash(item): item for item in data}
-            logging.info("judge item getting new: %s" % self.judge_item_pool)
             return True
         else:
             logging.error(
                 "update pool error: {error}".format(error=str(data) if data is not None else "data is none")
             )
             return False
+
+    def get_item_from_pool(self, key):
+        return self.judge_item_pool.get(key)

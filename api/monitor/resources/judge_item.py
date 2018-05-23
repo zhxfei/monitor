@@ -20,11 +20,14 @@ class JudgeItemList(Resource):
         policies = list(self.policy_document.find({}, {'creator': 0, 'owner': 0, 'update_time': 0}))
         for policy in policies:
             for strategy_id in policy.get('strategy_id_lst'):
-                judge_item = {}
                 strategy = self.strategy_document.find_one({'_id': ObjectId(strategy_id)})
-                judge_item['condition'] = strategy.get('condition')
-                judge_item['metrics'] = strategy.get('metrics')
-                judge_item['tags'] = policy.get('tags')
-                judge_item['monitor_id'] = str(policy.get('_id'))
-                response_data.append(judge_item)
+                if strategy:
+                    judge_item = dict()
+                    judge_item['condition'] = strategy.get('condition')
+                    judge_item['metrics'] = strategy.get('metrics')
+                    judge_item['tags'] = policy.get('tags')
+                    judge_item['monitor_id'] = str(policy.get('_id'))
+                    judge_item['update_time'] = strategy.get('update_time')
+
+                    response_data.append(judge_item)
         return response_data
