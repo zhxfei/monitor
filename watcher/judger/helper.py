@@ -20,7 +20,10 @@ class MonitorItemHelper:
         self.worker_queue = worker_queue
 
     def push_judge_msg(self, msg, queue_name):
-        self.data_puller.push_data(msg, queue_name)
+        if self.data_puller.push_data(msg, queue_name):
+            logging.debug("push judge message succeed, %s" % str(msg))
+        else:
+            logging.error("push judge message failed, %s" % str(msg))
 
     def pull_monitor_item(self, judge_item_pool):
         """
@@ -30,12 +33,16 @@ class MonitorItemHelper:
         :param judge_item_pool:
         :return:
         """
-        queue_is_empty, data_item_lst = self.data_puller.pull_data(self.batch)
-        if data_item_lst:
-            self._data_filter_and_cache(data_item_lst, judge_item_pool)
-        if queue_is_empty:
-            logging.debug("monitor item puller: redis queue is empty")
-            gevent.sleep(self._thread_sleep_time)
+        res = self.data_puller.pull_data(self.batch)
+        if res is not None:
+            queue_is_empty, data_item_lst = res
+            if data_item_lst:
+                self._data_filter_and_cache(data_item_lst, judge_item_pool)
+            if queue_is_empty:
+                logging.debug("monitor item puller: redis queue is empty")
+                gevent.sleep(self._thread_sleep_time)
+        else:
+            gevent.sleep(1)
 
     def _data_filter_and_cache(self, data_item_lst, judge_item_pool):
         """

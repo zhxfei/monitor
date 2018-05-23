@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from functools import reduce
 from collections import namedtuple
 
@@ -70,7 +69,6 @@ class Judge:
 
     def _judge_handler(self, msg, judge_item):
         message = self._build_judge_msg(msg, judge_item)
-        logging.debug("judge handle msg: %s" % str(message))
         self.monitor_data_helper.push_judge_msg(message, JUDGE_QUEUE_NAME)
 
     def _judge_main(self, key, judge_item, msg):
@@ -171,7 +169,7 @@ class Judge:
             'monitor_id': judge_item.monitor_id,
             'metrics': judge_item.metrics,
             'tags': judge_item.tags,
-            'time': datetime.fromtimestamp(msg[1]),
+            'time': msg[1],
             'value': msg[0],
             'condition': judge_item.condition,
         }

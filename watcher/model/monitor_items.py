@@ -1,10 +1,11 @@
 import heapq
 import logging
 from datetime import datetime
-from gevent.lock import BoundedSemaphore
-from .utils import gen_key
 
-CACHE_LEN = 11
+from gevent.lock import BoundedSemaphore
+
+from .utils import gen_key
+from watcher.config.default_setting import MONITOR_ITEM_CACHE_LEN as CACHE_LEN
 
 
 class MonitorItem:
