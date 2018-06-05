@@ -4,7 +4,7 @@
 
 WORKSPACE=$(cd $(dirname $0) && pwd)
 PID_FILE=${WORKSPACE}/agent.pid
-AGENT_RUN_PY=${WORKSPACE}/agentd_run.py
+AGENT_RUN_PY=${WORKSPACE}/agent_run.py
 CONF_PATH=${WORKSPACE}/agent/agent_config.json
 REQUIRMENT_FILE=${WORKSPACE}/requirments.txt
 REQUIRMENT_PACKS="zerorpc gevent psutil"
@@ -46,7 +46,7 @@ agent_start()
         return 0
     else
         echo "[INFO] agent starting failed"
-        cat ${WORKSPACE}/nohup.out && rm -f nohup.out
+        [ -e ${WORKSPACE}/nohup.out ] && cat ${WORKSPACE}/nohup.out && rm -f nohup.out
         return 5
     fi
 }
