@@ -4,10 +4,10 @@
 import os
 
 DEFAULT_DB_CONF = {
-    "host": "10.83.3.46",
-    "port": 30000,
-    "user": "easy_monitor",
-    "password": os.getenv("MONGO_PASS", None),
-    "name": "easy_monitor",
-    "document_name": "monitor_dev_v2"
+    "host": "localhost",
+    "port": 27017,
+    "user": "ease_monitor",
+    "password": "ease_monitor_pass",
+    "name": "ease_monitor",
+    "document_name": "monitor_data"
 }

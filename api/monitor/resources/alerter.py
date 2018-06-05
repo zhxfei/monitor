@@ -35,6 +35,16 @@ class Alerts(Resource):
             required=True,
             help='alert type not null',
         )
+
+        self.post_parser.add_argument(
+            'convergence_time',
+            dest='convergence_time',
+            type=int,
+            location=['json', 'args', 'form'],
+            required=True,
+            help='convergence_time time should be a integer',
+        )
+
         self.post_parser.add_argument(
             'to_persons',
             dest='to_persons',
@@ -72,7 +82,7 @@ class Alerts(Resource):
             res = self.document.insert_one({
                 'name': args.name,
                 'type': args.type,
-                # 'tags': args.tags,
+                'convergence_time': args.convergence_time,
                 'to_persons': to_persons or args.to_persons,
                 'owner': [g.user['login_name'], ],  # owner is a user list
                 'creator': g.user['login_name'],
@@ -117,6 +127,15 @@ class Alert(Resource):
             help='alert to persons not null',
         )
 
+        self.put_parser.add_argument(
+            'convergence_time',
+            dest='convergence_time',
+            type=int,
+            location=['json', 'args', 'form'],
+            required=True,
+            help='convergence_time time not null',
+        )
+
     def get(self, alert_id):
         if alert_id:
             res = self.document.find_one({
@@ -154,6 +173,7 @@ class Alert(Resource):
                     '$set': {
                         'name': args.name,
                         'type': args.type,
+                        'convergence_time': args.convergence_time,
                         'to_persons': args.to_persons,
                         'update_time': int(datetime.now().timestamp())
                     }

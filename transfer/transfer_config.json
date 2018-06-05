@@ -1,10 +1,13 @@
 {
-  "debug": false,
+  "debug": true,
   "logfile": "",
   "router": {
-    "max_queue_length": 100000, 
+    "max_queue_length": 1000000,
     "concurrency_num": 1,
-    "backend_nodes": ["watcher"]
+    "backend_nodes": [
+      "storage",
+      "watcher"
+    ]
   },
   "receiver": {
     "http": {
@@ -19,8 +22,8 @@
     }
   },
   "sender": {
-   "watcher": {
-      "max_queue_len": 100000,
+    "watcher": {
+      "max_queue_len": 1000000,
       "retry_times": 2,
       "wait_time": 5,
       "sleep_time": 1,
@@ -30,6 +33,19 @@
         "host": "localhost",
         "port": 6379,
         "db": 1
+      }
+    },
+    "storage": {
+      "max_queue_len": 1000000,
+      "retry_times": 2,
+      "wait_time": 5,
+      "sleep_time": 1,
+      "queue_suffix": "monitor_queue_storage",
+      "queue": {
+        "type": "redis",
+        "host": "localhost",
+        "port": 6379,
+        "db": 0
       }
     }
   }

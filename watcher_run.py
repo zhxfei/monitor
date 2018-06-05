@@ -9,8 +9,8 @@ if __name__ == '__main__':
 
     logging.basicConfig(
         # filename=self.config.var_dict.get('logfile') or None,
-        level=logging.INFO,
-        format='%(levelname)s:%(asctime)s:%(message)s'
+        level=logging.DEBUG,
+        format="[%(asctime)s] >>> %(levelname)s  %(name)s: %(message)s"
     )
     logging.info('watcher log init succeed...')
 

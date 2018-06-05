@@ -5,8 +5,8 @@
   "concurrency_num": 1,
   "batch": 98,
   "puller": {
-    "queue_suffix": "monitor_queue_dev",
-    "backend_type": "store",
+    "queue_suffix": "monitor_queue_storage",
+    "backend_type": "storage",
     "connection_params": {
         "type": "redis",
         "host": "localhost",
@@ -16,10 +16,11 @@
   },
   "database": {
     "type": "mongodb",
-    "host": "10.83.3.46",
-    "port": 30000,
-    "user": "easy_monitor",
-    "name": "easy_monitor",
-    "document_name": "monitor_dev_test"
+    "host": "127.0.0.1",
+    "port": 27017,
+    "user": "ease_monitor",
+    "name": "ease_monitor",
+    "password": "ease_monitor_pass",
+    "document_name": "monitor_data"
   }
 }

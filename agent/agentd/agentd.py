@@ -42,7 +42,7 @@ class MonitorAgent:
         logging.basicConfig(
             filename=self.config.var_dict.get('logfile') or None,
             level=logging.DEBUG if self.config.var_dict.get('debug') else DEFAULT_LOG_LEVEL,
-            format='%(levelname)s:%(asctime)s:%(message)s'
+            format="[%(asctime)s] >>> %(levelname)s  %(name)s: %(message)s"
         )
         logging.info("Log init succeed")
 

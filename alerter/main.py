@@ -6,7 +6,6 @@ from datetime import datetime
 
 import threading
 from queue import Queue
-# from concurrent.futures import Pool
 
 from common.connections.redis_conn_pool import RedisConnPool
 from alerter.sender import MailServer
@@ -48,24 +47,24 @@ class Alerter:
     def _alert_main(self, monitor_id, message, raw_message):
         alert_item_data = self._get_item_lst(monitor_id)
         if isinstance(alert_item_data, list):
-
             email_lst = [(alert_item.get('convergence_time'), alert_item.get('email'))
                          for alert_item in alert_item_data if alert_item.get('type') == 'email']
 
-            if monitor_id not in self.send_status_cache:
+            key = self.gen_key(raw_message)
+            if key not in self.send_status_cache:
                 logging.debug("message will send")
-                self.send_message(email_lst, message)
-                self.send_status_cache[monitor_id] = raw_message.get('time')
-
+                res = self.send_message(email_lst, message)
+                if res:
+                    self.send_status_cache[key] = raw_message.get('time')
             else:
                 convergence_time = int(alert_item_data[0].get('convergence_time'))
-
-                old_time = self.send_status_cache[monitor_id]
+                old_time = self.send_status_cache[key]
 
                 if raw_message.get('time') - old_time > convergence_time:
                     logging.debug("message will fresh and send")
-                    self.send_message(email_lst, message)
-                    self.send_status_cache[monitor_id] = int(time.time())
+                    res = self.send_message(email_lst, message)
+                    if res:
+                        self.send_status_cache[key] = raw_message.get('time')
                 else:
                     logging.debug("convergence_time succeed")
 
@@ -90,17 +89,56 @@ class Alerter:
         return monitor_id, message
 
     def send_message(self, email_lst, message):
+        res = None
         for _, _email in email_lst:
-            self.mail_server.mail_send(_email, message)
+            res = self.mail_server.mail_send(_email, message)
+        return res
+
+    @staticmethod
+    def gen_key(params):
+        metrics = params.get('metrics')
+        tags = params.get('tags')
+        monitor_id = params.get('monitor_id')
+        key_ = metrics + str(tags) + monitor_id
+        return hash(key_)
 
 
 if __name__ == '__main__':
+    import argparse
+
+    description = '''Monitor alert design for alert message send'''
+
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-l', '--log',
+                        metavar='LOG_FILE_PATH',
+                        required=False,
+                        default='./alert.log',
+                        dest='log_path',
+                        action='store',
+                        help='define Monitor alert log file path')
+    parser.add_argument('--level',
+                        metavar='LOG_LEVEL',
+                        required=False,
+                        default=logging.DEBUG,
+                        dest='log_level',
+                        action='store',
+                        help='''
+                            define Monitor alert log level
+                            example:
+                            CRITICAL = 50
+                            ERROR = 40
+                            WARNING = 30
+                            INFO = 20
+                            DEBUG = 10
+                            ''')
+
+    args = parser.parse_args()
     logging.basicConfig(
-        # filename=self.config.var_dict.get('logfile') or None,
-        level=logging.DEBUG,
-        format='%(levelname)s:%(asctime)s:%(message)s'
+        filename=args.log_path,
+        level=args.log_level,
+        format="[%(asctime)s] >>> %(levelname)s  %(name)s: %(message)s"
     )
-    logging.info('watcher log init succeed...')
+    logging.info('Monitor Alerter init succeed...')
 
     alert = Alerter()
 
@@ -110,10 +148,9 @@ if __name__ == '__main__':
     t1.start()
     job_lst.append(t1)
 
-    for _ in range(2):
-        t = threading.Thread(target=alert.alert_main)
-        job_lst.append(t)
-        t.start()
+    t2 = threading.Thread(target=alert.alert_main)
+    job_lst.append(t2)
+    t2.start()
 
     for t in job_lst:
         t.join()

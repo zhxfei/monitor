@@ -1,15 +1,15 @@
 {
-    "debug": false,
+    "debug": true,
     "logfile": "",
     "transfer": {
         "host": "localhost",
         "port": 4444,
         "timeout": 30,
-        "heartbeat": 5
+        "heartbeat": 60
     },
     "collector": {
-        "hostname": "newbie-unknown85824.i.nease.net",
-        "ip": "10.83.3.48",
+        "hostname": "",
+        "ip": "",
         "interval": 5,
         "ignore": [
         ]

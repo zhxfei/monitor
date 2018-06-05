@@ -46,7 +46,7 @@ class Router(object):
         logging.basicConfig(
             filename=self.config.var_dict.get('logfile') or None,
             level=logging.DEBUG if self.config.var_dict.get('debug') else logging.INFO,
-            format='%(levelname)s:%(asctime)s:%(message)s'
+            format="[%(asctime)s] >>> %(levelname)s  %(name)s: %(message)s"
         )
         logging.info('Transfer Log init succeed...')
 

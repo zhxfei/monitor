@@ -5,7 +5,7 @@ from api import app
 from api.security import auth
 
 
-class MetricList(Resource):
+class MetricsList(Resource):
     method_decorators = [auth.login_required]
 
     def __init__(self):
@@ -26,9 +26,9 @@ class MetricList(Resource):
         return {'code': 1}
 
     def get(self):
-        """ get metric list by hostname """
+        """ get metrics list by hostname """
         args = self.get_parser.parse_args()
-        res = self.document.distinct('metric', {
+        res = self.document.distinct('metrics', {
             "tags.hostname": args.host
         })
         return res

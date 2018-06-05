@@ -1,5 +1,5 @@
 """
-    this module provide some system metric status collect by psutil
+    this module provide some system metrics status collect by psutil
 """
 
 import os

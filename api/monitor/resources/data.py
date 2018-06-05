@@ -24,7 +24,7 @@ class MonitorData(Resource):
         )
 
         self.post_parser.add_argument(
-            'metric',
+            'metrics',
             dest='item',
             type=str,
             location=['json', 'args', 'form'],
@@ -70,7 +70,7 @@ class MonitorData(Resource):
             # asc return limit num items
             return list(self.document.find({
                 "tags.hostname": args.host,
-                "metric": args.item,
+                "metrics": args.item,
                 "timestamp": {
                     '$gte': args.s_time,
                     '$lte': args.e_time
@@ -87,7 +87,7 @@ class MonitorData(Resource):
             # desc return limit num items
             return list(self.document.find({
                 "tags.hostname": args.host,
-                "metric": args.item,
+                "metrics": args.item,
                 "timestamp": {
                     '$gte': args.s_time,
                     '$lte': args.e_time

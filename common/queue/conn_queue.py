@@ -60,7 +60,7 @@ class RedisQueue(BaseQueue):
 
     def put(self, data, queue_name=None):
         """ push data in redis list, by left push"""
-        if len(self) < self.max_queue_len:
+        if self.get_len(queue_name=queue_name) < self.max_queue_len:
             res = self.queue.lpush(queue_name or self.queue_name, data)
             return res
 
@@ -104,9 +104,9 @@ class RedisQueue(BaseQueue):
 
         return count < batch, data_lst
 
-    def get_len(self):
+    def get_len(self, queue_name=None):
         """ get queue length """
-        return self.queue.llen(self.queue_name)
+        return self.queue.llen(queue_name or self.queue_name)
 
     @classmethod
     def from_config(cls, config):
